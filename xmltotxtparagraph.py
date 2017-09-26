@@ -1,6 +1,25 @@
 import sys
 import xml.etree.ElementTree as ET
 
+def printParagraphs(line):
+	if len(line) < 7:
+		return
+
+	content = ''
+
+	for i in range(len(line) - 7):
+		if line[i:i+3] == '<p>':
+			i += 3
+			while i < len(line) - 3 and line[i:i+4] != '</p>':
+				if line[i] == '<':
+					while(line[i] != '>'):
+						i += 1
+					i += 1
+				content += line[i]
+				i += 1
+
+	print(content)
+
 def main():
 	if len(sys.argv) < 2:
 		print("Format: python xmltotxtparagraph.py <xmlfilename>.xml")
@@ -12,25 +31,39 @@ def main():
 		print("Format: python xmltotxtparagraph.py <xmlfilename>.xml")
 		return 1
 
-	# try:
-	# 	xmlFile = open(xmlFileName,"r")
-	# except IOError:
-	# 	print("Invalid file name.")
-	# 	print("Format: python xmltotxtparagraph.py <xmlfilename>.xml")
-	# 	return 1
+	xmlFileNameNoExt = xmlFileName
+	while len(xmlFileNameNoExt) > 0 and xmlFileNameNoExt[-1] != '.':
+		xmlFileNameNoExt = xmlFileNameNoExt[:-1]
+	if xmlFileNameNoExt[-1] == '.':
+		xmlFileNameNoExt = xmlFileNameNoExt[:-1]
 
 	try:
-		txtFile = open(sys.argv[1] + ".txt","w")
+		xmlFile = open(xmlFileName,"r")
+	except IOError:
+		print("Invalid file name.")
+		print("Format: python xmltotxtparagraph.py <xmlfilename>.xml")
+		return 1
+
+	# content = '\n'.join(xmlFile.readlines())
+	# print(content)
+
+	try:
+		txtFile = open(xmlFileNameNoExt + ".txt","w")
 	except IOError:
 		print("Error opening output file.")
 		return 1
 
-	tree = ET.parse(xmlFileName)
-	root = tree.getroot()
-	for para in root.findall('p'):
-		txt.File.write(para.text)
+	for line in xmlFile:
+		printParagraphs(line)		
 
-	# xmlFile.close()
+	# root = ET.fromstring(content)
+	# # root = tree.getroot()
+	# for para in root.findall('p'):
+	# 	print("here")
+	# 	print(para.txt)
+	# 	# txtFile.write(para.text)
+
+	xmlFile.close()
 	txtFile.close()
 
 	print("Done.")
