@@ -17,6 +17,7 @@ def printParagraphs(line):
 					i += 1
 				content += line[i]
 				i += 1
+			content += ' '
 
 	print(content)
 
