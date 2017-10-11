@@ -73,7 +73,7 @@ def main():
 	xmlFile.close()
 	txtFile.close()
 
-	print("Done.")
+	print("XML Parsed.")
 	return 0
 
 if __name__ == "__main__":
