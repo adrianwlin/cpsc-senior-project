@@ -34,10 +34,19 @@ def extractNamedEntities(filename):
 
 		# Update the full list of named-entities
 		fullList += continuous_chunk
-	
+
 	print fullList
 	f.close()
 	return fullList
+
+def findGenes(words):
+	genes = []
+	gene_regex = re.compile("^[0-9A-Z]+$")
+	for word in words:
+		if gene_regex.match(word):
+			genes.append(word)
+	print genes
+	return genes
 
 def main():
 	# Check correct number of arguments
@@ -52,8 +61,10 @@ def main():
 		print("Format: python namedentityextractor.py <txtfilename>.txt")
 		return 1
 
-	extractNamedEntities(txtFileName)
+	named_entities = extractNamedEntities(txtFileName)
 	print "Entities extracted."
+	genes = findGenes(named_entities)
+	print "Genes extracted."
 	return 0
 
 if __name__ == "__main__":
