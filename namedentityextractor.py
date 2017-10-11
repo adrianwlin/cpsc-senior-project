@@ -5,27 +5,39 @@ from nltk import word_tokenize, pos_tag, ne_chunk
 from nltk.tree import Tree
 
 def extractNamedEntities(filename):
+	# File being read
 	f = open(filename, "r")
-	for line in f:
-		ne_tree = ne_chunk(pos_tag(word_tokenize(line)))
-	prev = None
-	continuous_chunk = []
-	current_chunk = []
-	for i in ne_tree:
-		if type(i) == Tree:
-			current_chunk.append(" ".join([token for token, pos in i.leaves()]))
-		elif current_chunk:
-			named_entity = " ".join(current_chunk)
-			if named_entity not in continuous_chunk:
-				continuous_chunk.append(named_entity)
-				current_chunk = []
-		else:
-			continue
-	print continuous_chunk
-	f.close()
 
-	print "Entities extracted."
-	return continuous_chunk
+	# Full list of named entities
+	fullList = []
+
+	# Loop through file and extract entities in each line
+	for line in f:
+		# Get the named-entity tree of this line
+		ne_tree = ne_chunk(pos_tag(word_tokenize(line)))
+
+		# Initialize variables
+		continuous_chunk = [] # Named entities in this line
+		current_chunk = [] # Current chunk (part of named-entity)
+
+		# Loop through element of tree and create chunks (parts of named entities)
+		for i in ne_tree:
+			if type(i) == Tree:
+				current_chunk.append(" ".join([token for token, pos in i.leaves()]))
+			elif current_chunk:
+				named_entity = " ".join(current_chunk)
+				if named_entity not in continuous_chunk:
+					continuous_chunk.append(named_entity)
+					current_chunk = []
+			else:
+				continue
+
+		# Update the full list of named-entities
+		fullList += continuous_chunk
+	
+	print fullList
+	f.close()
+	return fullList
 
 def main():
 	# Check correct number of arguments
@@ -41,6 +53,7 @@ def main():
 		return 1
 
 	extractNamedEntities(txtFileName)
+	print "Entities extracted."
 	return 0
 
 if __name__ == "__main__":
