@@ -25,6 +25,7 @@ def writeParagraphsToFile(line, out):
 				# Increment the content
 				content += line[i]
 				i += 1 # Increment index
+			content += ' ' # Space between paragraphs
 
 	# Write content to output
 	out.write(content)
