@@ -41,7 +41,7 @@ def extractNamedEntities(filename):
 
 def findGenes(words):
 	genes = []
-	gene_regex = re.compile("^[0-9A-Z]+$")
+	gene_regex = re.compile("^[0-9A-Z]*[A-Z]+[0-9A-Z]*$")
 	for word in words:
 		if gene_regex.match(word):
 			genes.append(word)
