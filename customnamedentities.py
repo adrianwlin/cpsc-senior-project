@@ -5,13 +5,14 @@ from nltk import word_tokenize, pos_tag, ne_chunk
 from nltk.tree import Tree
 from nltk.corpus import names
 import enchant
+import codecs
 
 #### This file is a work in progress! Currently it is just the non-custom one
 
 def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	# File being read
 	f1 = open(file1name, "r")
-	f2 = open(file1name, "r")
+	f2 = open(file2name, "r")
 
 	labeled_names = []
 	featuresets = []
@@ -25,13 +26,13 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 		# Number of capital letters out of length
 		# Number of numbers out of length
 		# Not a dictionary word
-		featuresets.append(({'len': len(line), \
+		featuresets.append(({'word': line, 'len': len(line), \
 			'cap_frac': (sum(map(str.isupper, line)) + 0.0)/len(line), \
 			'num_frac': (sum(map(str.isdigit, line)) + 0.0)/len(line), \
 			'dict': d.check(line)}, label1))
 
 	for line in f2:
-		for word in word_tokenize(line):
+		for word in word_tokenize(line.decode('utf-8')):
 			labeled_names.append((word, label2))
 
 			## Features:
@@ -39,13 +40,15 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 			# Number of capital letters out of length
 			# Number of numbers out of length
 			# Not a dictionary word
-			featuresets.append(({'len': len(word), \
-				'cap_frac': (sum(map(str.isupper, word)) + 0.0)/len(word), \
-				'num_frac': (sum(map(str.isdigit, word)) + 0.0)/len(word), \
+			featuresets.append(({'word': word, 'len': len(word), \
+				'cap_frac': (sum(c.isupper() for c in word) + 0.0)/len(word), \
+				'num_frac': (sum(c.isdigit() for c in word) + 0.0)/len(word), \
 				'dict': d.check(word)}, label2))
 
 	train_set, test_set = featuresets[len(featuresets)/2:], featuresets[:len(featuresets)/2]
 	classifier = nltk.NaiveBayesClassifier.train(train_set)
+
+	print featuresets
 
 	# Test some basic cases
 	testword1 = 'A2M'
