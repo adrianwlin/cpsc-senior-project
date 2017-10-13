@@ -48,7 +48,7 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	train_set, test_set = featuresets[len(featuresets)/2:], featuresets[:len(featuresets)/2]
 	classifier = nltk.NaiveBayesClassifier.train(train_set)
 
-	print featuresets
+	# print featuresets
 
 	# Test some basic cases
 	testword1 = 'A2M'
