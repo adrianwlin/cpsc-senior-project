@@ -6,6 +6,7 @@ from nltk.tree import Tree
 from nltk.corpus import names
 import enchant
 import codecs
+from random import shuffle
 
 #### This file is a work in progress! Currently it is just the non-custom one
 
@@ -45,6 +46,7 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 				'num_frac': (sum(c.isdigit() for c in word) + 0.0)/len(word), \
 				'dict': d.check(word)}, label2))
 
+	shuffle(featuresets)
 	train_set, test_set = featuresets[len(featuresets)/2:], featuresets[:len(featuresets)/2]
 	classifier = nltk.NaiveBayesClassifier.train(train_set)
 
@@ -77,7 +79,7 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 
 def main():
 	# Check correct number of arguments
-	if len(sys.argv) < 2:
+	if len(sys.argv) < 3:
 		print("Format: python customnamedentities.py <genefilename>.txt <notgenefilename>.txt [[<txtfilename>.txt]]")
 		return 1
 
