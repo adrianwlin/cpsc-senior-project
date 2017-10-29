@@ -53,22 +53,22 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	# print featuresets
 
 	# Test some basic cases
-	testword1 = 'A2M'
-	testword2 = 'Hello'
-	testword3 = '1234'
+	# testword1 = 'A2M'
+	# testword2 = 'Hello'
+	# testword3 = '1234'
 
-	print "Classifier classifies A2M as " + classifier.classify({'len': len(testword1), \
-				'cap_frac': (sum(map(str.isupper, testword1)) + 0.0)/len(testword1), \
-				'num_frac': (sum(map(str.isdigit, testword1)) + 0.0)/len(testword1), \
-				'dict': d.check(testword1)})
-	print "Classifier classifies Hello as " + classifier.classify({'len': len(testword2), \
-				'cap_frac': (sum(map(str.isupper, testword2)) + 0.0)/len(testword2), \
-				'num_frac': (sum(map(str.isdigit, testword2)) + 0.0)/len(testword2), \
-				'dict': d.check(testword2)})
-	print "Classifier classifies 1234 as " + classifier.classify({'len': len(testword3), \
-				'cap_frac': (sum(map(str.isupper, testword3)) + 0.0)/len(testword3), \
-				'num_frac': (sum(map(str.isdigit, testword3)) + 0.0)/len(testword3), \
-				'dict': d.check(testword3)})
+	# print "Classifier classifies A2M as " + classifier.classify({'len': len(testword1), \
+	# 			'cap_frac': (sum(map(str.isupper, testword1)) + 0.0)/len(testword1), \
+	# 			'num_frac': (sum(map(str.isdigit, testword1)) + 0.0)/len(testword1), \
+	# 			'dict': d.check(testword1)})
+	# print "Classifier classifies Hello as " + classifier.classify({'len': len(testword2), \
+	# 			'cap_frac': (sum(map(str.isupper, testword2)) + 0.0)/len(testword2), \
+	# 			'num_frac': (sum(map(str.isdigit, testword2)) + 0.0)/len(testword2), \
+	# 			'dict': d.check(testword2)})
+	# print "Classifier classifies 1234 as " + classifier.classify({'len': len(testword3), \
+	# 			'cap_frac': (sum(map(str.isupper, testword3)) + 0.0)/len(testword3), \
+	# 			'num_frac': (sum(map(str.isdigit, testword3)) + 0.0)/len(testword3), \
+	# 			'dict': d.check(testword3)})
 
 	f1.close()
 	f2.close()
