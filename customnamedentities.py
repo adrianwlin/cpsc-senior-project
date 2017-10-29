@@ -74,7 +74,39 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	f2.close()
 	
 	## Test named entity extractor on a file
-	# if txtFileName != None:
+	if txtFileName != None:
+		# Open text file
+		f3 = open(txtFileName, "r")
+
+		# Count values for genes and non-genes
+		g = 0
+		ng = 0
+
+		# For each line, classify and print result
+		for line in f3:
+			# Each word in the line
+			for token in line.split():
+				# Handle newline with no text
+				if len(token) <= 0:
+					continue
+
+				# Classification of word
+				cl = classifier.classify({'len': len(token), \
+					'cap_frac': (sum(map(str.isupper, token)) + 0.0)/len(token), \
+					'num_frac': (sum(map(str.isdigit, token)) + 0.0)/len(token), \
+					'dict': d.check(testword1)})
+
+				# Print output
+				# print "Classifier classifies " + token + " as " + cl
+
+				# Increment count of "gene" and "not gene"
+				if cl == "gene":
+					g += 1
+				else:
+					ng +=1
+
+		print "Total number of genes classified is: " + str(g)
+		print "Total number of non-genes classified is: " + str(ng)
 
 
 def main():
@@ -97,13 +129,15 @@ def main():
 		print("Format: python customnamedentities.py <genefilename>.txt <notgenefilename>.txt [[<txtfilename>.txt]]")
 		return 1
 
-	# textFileName = sys.argv[3]
-	# if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
-	# 	print("Invalid file name.")
-	# 	print("Format: python customnamedentities.py <genefilename>.txt [[<txtfilename>.txt]]")
-	# 	return 1
+	textFileName = None
+	if len(sys.argv) == 4:
+		textFileName = sys.argv[3]
+		if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
+			print("Invalid file name.")
+			print("Format: python customnamedentities.py <genefilename>.txt [[<txtfilename>.txt]]")
+			return 1
 
-	customNamedEntities(geneFileName, 'gene', notGeneFileName, 'not gene', None)
+	customNamedEntities(geneFileName, 'gene', notGeneFileName, 'not gene', textFileName)
 	return 0
 
 if __name__ == "__main__":
