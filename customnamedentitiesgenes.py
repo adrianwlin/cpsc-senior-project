@@ -129,8 +129,9 @@ def main():
 		print("Format: python customnamedentities.py <genefilename>.txt <notgenefilename>.txt [[<txtfilename>.txt]]")
 		return 1
 
+	# Text file to run the gene classifier on
 	textFileName = None
-	if len(sys.argv) == 4:
+	if len(sys.argv) >= 4:
 		textFileName = sys.argv[3]
 		if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
 			print("Invalid file name.")
