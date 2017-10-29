@@ -112,21 +112,21 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 def main():
 	# Check correct number of arguments
 	if len(sys.argv) < 3:
-		print("Format: python customnamedentities.py <genefilename>.txt <notgenefilename>.txt [[<txtfilename>.txt]]")
+		print("Format: python customnamedentitiesdiseases.py <diseasefilename>.txt <notdiseasefilename>.txt [[<txtfilename>.txt]]")
 		return 1
 
 	# Get input file name and check validity
-	geneFileName = sys.argv[1]
-	if len(geneFileName) < 4 or (geneFileName[-4:] != ".txt"):
+	diseaseFileName = sys.argv[1]
+	if len(diseaseFileName) < 4 or (diseaseFileName[-4:] != ".txt"):
 		print("Invalid file name.")
-		print("Format: python customnamedentities.py <genefilename>.txt <notgenefilename>.txt [[<txtfilename>.txt]]")
+		print("Format: python customnamedentitiesdiseases.py <diseasefilename>.txt <notdiseasefilename>.txt [[<txtfilename>.txt]]")
 		return 1
 
 	# Get input file name and check validity
-	notGeneFileName = sys.argv[2]
-	if len(notGeneFileName) < 4 or (notGeneFileName[-4:] != ".txt"):
+	notDiseaseFileName = sys.argv[2]
+	if len(notDiseaseFileName) < 4 or (notDiseaseFileName[-4:] != ".txt"):
 		print("Invalid file name.")
-		print("Format: python customnamedentities.py <genefilename>.txt <notgenefilename>.txt [[<txtfilename>.txt]]")
+		print("Format: python customnamedentitiesdiseases.py <diseasefilename>.txt <notdiseasefilename>.txt [[<txtfilename>.txt]]")
 		return 1
 
 	# Text file to run the gene classifier on
@@ -135,10 +135,10 @@ def main():
 		textFileName = sys.argv[3]
 		if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
 			print("Invalid file name.")
-			print("Format: python customnamedentities.py <genefilename>.txt [[<txtfilename>.txt]]")
+			print("Format: python customnamedentitiesdiseases.py <diseasefilename>.txt [[<txtfilename>.txt]]")
 			return 1
 
-	customNamedEntities(geneFileName, 'gene', notGeneFileName, 'not gene', textFileName)
+	customNamedEntities(diseaseFileName, 'gene', notDiseaseFileName, 'not gene', textFileName)
 	return 0
 
 if __name__ == "__main__":
