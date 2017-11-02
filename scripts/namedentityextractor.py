@@ -63,6 +63,7 @@ def main():
 
 	named_entities = extractNamedEntities(txtFileName)
 	print "Entities extracted."
+	print named_entities
 	genes = findGenes(named_entities)
 	print "Genes extracted."
 	return 0

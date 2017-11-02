@@ -8,8 +8,6 @@ import enchant
 import codecs
 from random import shuffle
 
-#### This file is a work in progress! Currently it is just the non-custom one
-
 def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	# File being read
 	f1 = open(file1name, "r")
@@ -20,17 +18,18 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	d = enchant.Dict("en_US") # English Dictionary
 
 	for line in f1:
-		labeled_names.append((line, label1))
+		for word in word_tokenize(line.decode('utf-8')):
+			labeled_names.append((word, label1))
 
-		## Features:
-		# Length
-		# Number of capital letters out of length
-		# Number of numbers out of length
-		# Not a dictionary word
-		featuresets.append(({'word': line, 'len': len(line), \
-			'cap_frac': (sum(map(str.isupper, line)) + 0.0)/len(line), \
-			'num_frac': (sum(map(str.isdigit, line)) + 0.0)/len(line), \
-			'dict': d.check(line)}, label1))
+			## Features:
+			# Length
+			# Number of capital letters out of length
+			# Number of numbers out of length
+			# Not a dictionary word
+			featuresets.append(({'word': word, 'len': len(word), \
+				'cap_frac': (sum(map(str.isupper, word)) + 0.0)/len(word), \
+				'num_frac': (sum(map(str.isdigit, word)) + 0.0)/len(word), \
+				'dict': d.check(word)}, label1))
 
 	for line in f2:
 		for word in word_tokenize(line.decode('utf-8')):
@@ -94,7 +93,7 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 				cl = classifier.classify({'len': len(token), \
 					'cap_frac': (sum(map(str.isupper, token)) + 0.0)/len(token), \
 					'num_frac': (sum(map(str.isdigit, token)) + 0.0)/len(token), \
-					'dict': d.check(testword1)})
+					'dict': d.check(token)})
 
 				# Print output
 				# print "Classifier classifies " + token + " as " + cl

@@ -8,8 +8,6 @@ import enchant
 import codecs
 from random import shuffle
 
-#### This file is a work in progress! Currently it is just the non-custom one
-
 def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	# File being read
 	f1 = open(file1name, "r")
@@ -19,6 +17,9 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	featuresets = []
 	d = enchant.Dict("en_US") # English Dictionary
 
+	### IMPORTANT NOTE
+	# Since diseases can be more than 1 word unlike genes,
+	# These are trained 1 per LINE instead of 1 per word token in training file
 	for line in f1:
 		labeled_names.append((line, label1))
 
@@ -27,7 +28,7 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 		# Number of capital letters out of length
 		# Number of numbers out of length
 		# Not a dictionary word
-		featuresets.append(({'word': line, 'len': len(line), \
+		featuresets.append(({'line': line, 'len': len(line), \
 			'cap_frac': (sum(map(str.isupper, line)) + 0.0)/len(line), \
 			'num_frac': (sum(map(str.isdigit, line)) + 0.0)/len(line), \
 			'dict': d.check(line)}, label1))

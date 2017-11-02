@@ -1,0 +1,54 @@
+About 5% to 10% of breast cancers are thought to be hereditary, caused by abnormal genes passed from parent to child.
+
+Genes are short segments of DNA (deoxyribonucleic acid) found in chromosomes. DNA contains the instructions for building proteins. And proteins control the structure and function of all the cells that make up your body.
+
+Think of your genes as an instruction manual for cell growth and function. Abnormalities in the DNA are like typographical errors. They may provide the wrong set of instructions, leading to faulty cell growth or function. In any one person, if there is an error in a gene, that same mistake will appear in all the cells that contain the same gene. This is like having an instruction manual in which all the copies have the same typographical error.
+
+BRCA1 and BRCA2 genes
+Most inherited cases of breast cancer are associated with two abnormal genes: BRCA1 (BReast CAncer gene one) and BRCA2 (BReast CAncer gene two).
+
+Everyone has BRCA1 and BRCA2 genes. The function of the BRCA genes is to repair cell damage and keep breast, ovarian, and other cells growing normally. But when these genes contain abnormalities or mutations that are passed from generation to generation, the genes don't function normally and breast, ovarian, and other cancer risk increases. Abnormal BRCA1 and BRCA2 genes may account for up to 10% of all breast cancers, or 1 out of every 10 cases.
+
+Having an abnormal BRCA1 or BRCA2 gene doesn't mean you will be diagnosed with breast cancer. Researchers are learning that other mutations in pieces of chromosomes -- called SNPs (single nucleotide polymorphisms) -- may be linked to higher breast cancer risk in women with an abnormal BRCA1 gene as well as women who didn't inherit an abnormal breast cancer gene.
+
+Women who are diagnosed with breast cancer and have an abnormal BRCA1 or BRCA2 gene often have a family history of breast cancer, ovarian cancer, and other cancers. Still, most people who develop breast cancer did not inherit an abnormal breast cancer gene and have no family history of the disease.
+
+You are substantially more likely to have an abnormal breast cancer gene if:
+
+You have blood relatives (grandmothers, mother, sisters, aunts) on either your mother's or father's side of the family who had breast cancer diagnosed before age 50.
+There is both breast and ovarian cancer on the same side of the family or in a single individual.
+You have a relative(s) with triple-negative breast cancer.
+There are other cancers in your family in addition to breast, such as prostate, melanoma, pancreatic, stomach, uterine, thyroid, colon, and/or sarcoma.
+Women in your family have had cancer in both breasts.
+You are of Ashkenazi Jewish (Eastern European) heritage.
+You are African American and have been diagnosed with breast cancer at age 35 or younger.
+A man in your family has had breast cancer.
+There is a known abnormal breast cancer gene in your family.
+If one family member has an abnormal breast cancer gene, it does not mean that all family members will have it.
+
+The average woman in the United States has about a 1 in 8, or about 12%, risk of developing breast cancer in her lifetime. Women who have an abnormal BRCA1 or BRCA2 gene (or both) can have up to an 80% risk of being diagnosed with breast cancer during their lifetimes. Breast cancers associated with an abnormal BRCA1 or BRCA2 gene tend to develop in younger women and occur more often in both breasts than cancers in women without these abnormal genes.
+
+Women with an abnormal BRCA1 or BRCA2 gene also have an increased risk of developing ovarian, colon, and pancreatic cancers, as well as melanoma.
+
+Men who have an abnormal BRCA2 gene have a higher risk of breast cancer than men who don't -- about 8% by the time they're 80 years old. This is about 80 times greater than average.
+
+Men with an abnormal BRCA1 gene have a slightly higher risk of prostate cancer. Men with an abnormal BRCA2 gene are 7 times more likely than men without the abnormal gene to develop prostate cancer. Other cancer risks, such as cancer of the skin or digestive tract, also may be slightly higher in men with abnormal BRCA1 or BRCA2 genes.
+
+Other genes
+Changes in other genes are also associated with breast cancer. These abnormal genes are much less common and don't seem to increase risk as much as abnormal BRCA1 and BRCA2 genes, which are considered rare. Still, because these genetic mutations are rarer, they haven't been studied as much as the BRCA genes.
+
+ATM: The ATM gene helps repair damaged DNA. DNA carries genetic information in cells. Inheriting two abnormal copies of this gene causes the disease ataxia-telangiectasia, a rare disease that affects brain development. Inheriting one abnormal ATM gene has been linked to an increased rate of breast cancer and pancreatic cancer in some families because the abnormal gene stops the cells from repairing damaged DNA.
+BRIP1: The BRIP1 gene also works to repair DNA. Inheriting one abnormal BRIP1 gene is associated with higher risk of both breast and ovarian cancer.
+CDH1: The CDH1 gene makes a protein that helps cells bind together to form tissue. An abnormal CDH1 gene increases the risk of a rare type of stomach cancer at an early age. The lifetime risk is up to 83%. Women with an abnormal CDH1 gene also have a 39% to 52% lifetime risk of invasive lobular breast cancer.
+CHEK2: The CHEK2 gene provides instructions for making a protein that stops tumor growth. An abnormal CHEK2 gene can at least double breast cancer risk, double colon cancer risk, and increase prostate cancer risk.
+MRE11A: Along with the RAD50 and NBN genes, the MRE11A gene forms the MRN complex, which helps repair DNA damage in cells. An abnormal MRE11A gene is linked to ataxia-telangiectasia-like disorder, a rare disease that affects brain development. The disease also weakens the immune system and increases cancer risk.
+NBN: Along with the MRE11A and RAD50 genes, the NBN gene forms the MRN complex, which helps repair DNA damage in cells. An abnormal NBN gene causes Nijmegen breakage syndrome, a condition that causes slow growth in infancy and early childhood. People with Nijmegen breakage syndrome are shorter than average; have a higher risk of several types of cancer, including breast cancer; and many other health problems. Of the three genes in the MRN complex, researchers think that an abnormal NBN gene has the strongest link to breast cancer.
+PALB2: The PALB2 gene is called the partner and localizer of BRCA2. It provides instructions to make a protein that works with the BRCA2 protein to repair damaged DNA and stop tumor growth. Research published in 2014 found that an abnormal PALB2 gene increases breast cancer risk 5 to 9 times higher than average, almost as high as an abnormal BRCA1 or BRCA2 gene. Women with an abnormal PALB2 gene have a 33% to 58% lifetime risk of developing breast cancer. In comparison, women with an abnormal BRCA1 gene have a 50% to 70% risk of developing breast cancer by age 70. Women with an abnormal BRCA2 gene have a 40% to 60% risk of developing breast cancer by age 70.
+PTEN: The PTEN gene helps regulate cell growth. An abnormal PTEN gene causes Cowden syndrome, a rare disorder in which people have a higher risk of both benign (not cancer) and cancerous breast tumors, as well as growths in the digestive tract, thyroid, uterus, and ovaries. The lifetime breast cancer risk for women with a PTEN mutation is up to 85%.
+
+In 2015, an abnormal version of the SEC23B gene also was linked to Cowden syndrome. The SEC23B gene also helps regulate cell growth. Because this discovery is so new, there is not a clinical test available for an abnormal SEC23B gene.
+RAD50: Along with the MRE11A and NBN genes, the RAD50 gene forms the MRN complex, which helps repair DNA damage in cells. An abnormal RAD50 gene has been linked to a higher risk of breast cancer in some families because the abnormal gene stops the cells from repairing damaged DNA.
+RAD51C: The RAD51C gene repairs DNA damage. People who have inherited one abnormal copy have higher risk of breast and ovarian cancer.
+STK11: The STK11 gene helps regulate cell growth. An abnormal STK11 gene causes Peutz Jegher syndrome, a rare disorder in which people tend to develop a type of polyp, called a hamartomatous polyp, mostly in the small intestine but also in the stomach and colon. People with Peutz Jegher syndrome are at higher risk not only of gastrointestinal cancers, but also breast and lung cancer and ovarian tumors. People may also develop freckling around the eyes, nose, and mouth, as well as inside the mouth.
+TP53: The TP53 gene provides instructions to the body for making a protein that stops tumor growth. Inheriting an abnormal TP53 gene causes Li-Fraumeni syndrome, a disorder that causes people to develop soft tissue cancers at a young age. People with this rare syndrome have a higher-than-average-risk of breast cancer and several other cancers, including leukemia, brain tumors, and sarcomas (cancer of the bones or connective tissue). The cancer risk in women with a TP53 mutation is up to nearly 100%. In men, it is up to 73%. This gender difference is mostly due to the high breast cancer risk in women.
+Inheriting two abnormal copies of the BRCA2, BRIP1, MRE11A, NBN, PALB2, RAD50, or RAD51C genes causes the disease Fanconi anema, which suppresses bone marrow function and leads to extremely low levels of red blood cells, white blood cells, and platelets. People with Fanconi anemia also have a higher risk of several other types of cancer, including kidney cancer and brain cancer.
