@@ -1,0 +1,9 @@
+Manifest-Version: 1.2
+Required-Version: 1.2 
+Name: ABNER/
+Sealed: true
+Main-Class: GUI
+Specification-Title: "ABNER"
+Specification-Vendor: "Burr Settles"
+Specification-Version: "1.5"
+
