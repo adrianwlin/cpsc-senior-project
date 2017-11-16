@@ -61,6 +61,12 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 				# Add the gene name to data
 				for prge in results_prge:
 					token = prge.split('|')[0]
+					gene = {}
+					gene['index'] = sent.find(token)
+					gene['lengthInChars'] = len(token)
+					gene['lengthInWords'] = len(token.split(' '))
+					gene['name'] = token
+
 					# Check if protein or gene if training data given
 					if geneFileName != None and notGeneFileName != None:
 						classifier = customNamedEntities(geneFileName, 'gene', notGeneFileName, 'protein')
@@ -69,9 +75,9 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 								'num_frac': (sum(map(str.isdigit, token)) + 0.0)/len(token), \
 								'dict': d.check(token)})
 						if cl == 'gene':
-							data['genes'].append(token)
+							data['genes'].append(gene)
 					else:
-						data['genes'].append(token)
+						data['genes'].append(gene)
 
 				# Diseases in sentence
 				results_diso = becas.annotate_text(sent, groups={
@@ -80,7 +86,15 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 
 				# Add the gene name to data
 				for diso in results_diso:
-					data['diseases'].append(diso.split('|')[0])
+					token = diso.split('|')[0]
+					dis = {}
+					dis['index'] = sent.find(token)
+					dis['lengthInChars'] = len(token)
+					dis['lengthInWords'] = len(token.split(' '))
+					dis['name'] = token
+
+					# Update data
+					data['diseases'].append(dis)
 
 				# Update output
 				output.append(data)
