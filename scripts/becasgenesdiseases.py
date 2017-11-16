@@ -8,10 +8,12 @@ import enchant
 import codecs
 from random import shuffle
 import becas
+from customnamedentitiesgenes import customNamedEntities
 becas.email = 'tbaldy123@gmail.com'
 becas.tool = 'gene-disease-relationship-finder'
 
-def customNamedEntities(txtFileName):
+def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
+	d = enchant.Dict("en_US") # English Dictionary
 	## Test named entity extractor on a file
 	if txtFileName != None:
 		# Open text file
@@ -22,13 +24,15 @@ def customNamedEntities(txtFileName):
 		# 	line: string, # Full sentence
 		# 	genes: [{
 		# 				index: int, # Index into sentence
-		# 				length: int, # Length of gene name
+		# 				lengthInChars: int, # Length of gene name
+		# 				lengthInWords: int, # Length of gene name
 		# 				name: string # Full gene name
 		# 			}],
 		# 	diseases: [{
 		# 				index: int, # Index into sentence
-		# 				length: int, # Length of gene name
-		# 				name: string # Full gene name
+		# 				lengthInChars: int, # Length of disease name
+		# 				lengthInWords: int, # Length of disease name
+		# 				name: string # Full disease name
 		# 			}]
 		# }, {
 		# 	...
@@ -39,6 +43,7 @@ def customNamedEntities(txtFileName):
 		# For each line, classify and print result
 		for line in f:
 			for sent in nltk.tokenize.sent_tokenize(line):
+				# Initialize data (the next entry in output)
 				data = {}
 				data['line'] = sent
 				data['genes'] = []
@@ -55,7 +60,18 @@ def customNamedEntities(txtFileName):
 
 				# Add the gene name to data
 				for prge in results_prge:
-					data['genes'].append(prge.split('|')[0])
+					token = prge.split('|')[0]
+					# Check if protein or gene if training data given
+					if geneFileName != None and notGeneFileName != None:
+						classifier = customNamedEntities(geneFileName, 'gene', notGeneFileName, 'protein')
+						cl = classifier.classify({'len': len(token), \
+								'cap_frac': (sum(map(str.isupper, token)) + 0.0)/len(token), \
+								'num_frac': (sum(map(str.isdigit, token)) + 0.0)/len(token), \
+								'dict': d.check(token)})
+						if cl == 'gene':
+							data['genes'].append(token)
+					else:
+						data['genes'].append(token)
 
 				# Diseases in sentence
 				results_diso = becas.annotate_text(sent, groups={
@@ -66,6 +82,7 @@ def customNamedEntities(txtFileName):
 				for diso in results_diso:
 					data['diseases'].append(diso.split('|')[0])
 
+				# Update output
 				output.append(data)
 	return output
 
@@ -73,7 +90,7 @@ def customNamedEntities(txtFileName):
 def main():
 	# Check correct number of arguments
 	if len(sys.argv) < 2:
-		print("Format: python becasgenesdiseases.py [[<txtfilename>.txt]]")
+		print("Format: python becasgenesdiseases.py <txtfilename>.txt")
 		return 1
 
 	# Text file to run the gene classifier on
@@ -81,13 +98,29 @@ def main():
 	if len(sys.argv) >= 2:
 		textFileName = sys.argv[1]
 		if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
-			print("Invalid file name.")
-			print("Format: python becasgenesdiseases.py [[<txtfilename>.txt]]")
+			print("Invalid text file name.")
+			print("Format: python becasgenesdiseases.py <txtfilename>.txt")
+			return 1
+	
+	# If no gene file and non-gene file to train on, run becasNER
+	# without differing between proteins and genes
+	# Otherwise, also take this into account to differentiate proteins and genes
+	if len(sys.argv) < 4:
+		print(becasNER(textFileName))
+	else:
+		geneFileName = sys.argv[2]
+		if len(geneFileName) < 4 or (geneFileName[-4:] != ".txt"):
+			print("Invalid gene file name.")
+			print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
 			return 1
 
-	# customNamedEntities(diseaseFileName, 'gene', notDiseaseFileName, 'not gene', textFileName)
+		nonGeneFileName = sys.argv[3]
+		if len(nonGeneFileName) < 4 or (nonGeneFileName[-4:] != ".txt"):
+			print("Invalid non-gene file name.")
+			print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
+			return 1
 
-	print(customNamedEntities(textFileName))
+		print(becasNER(textFileName, geneFileName, nonGeneFileName))
 	return 0
 
 if __name__ == "__main__":

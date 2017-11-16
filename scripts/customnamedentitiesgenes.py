@@ -106,6 +106,7 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 
 		print "Total number of genes classified is: " + str(g)
 		print "Total number of non-genes classified is: " + str(ng)
+	return classifier
 
 
 def main():
