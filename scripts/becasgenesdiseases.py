@@ -17,26 +17,57 @@ def customNamedEntities(txtFileName):
 		# Open text file
 		f = open(txtFileName, "r")
 
-		# Count values for genes and non-genes
-		count = 0
+		## Output format
+		# [{
+		# 	line: string, # Full sentence
+		# 	genes: [{
+		# 				index: int, # Index into sentence
+		# 				length: int, # Length of gene name
+		# 				name: string # Full gene name
+		# 			}],
+		# 	diseases: [{
+		# 				index: int, # Index into sentence
+		# 				length: int, # Length of gene name
+		# 				name: string # Full gene name
+		# 			}]
+		# }, {
+		# 	...
+		# }
+		# ...]
+		output = []
 
 		# For each line, classify and print result
 		for line in f:
-			# Handle newline with no text
-			if len(line) <= 0:
-				continue
+			for sent in nltk.tokenize.sent_tokenize(line):
+				data = {}
+				data['line'] = sent
+				data['genes'] = []
+				data['diseases'] = []
 
-			# Classification of word
-			results = becas.annotate_text(line, groups={
-				"DISO": True,
-				"PRGE": True
-			})
-			print(results)
+				# Handle newline with no text
+				if len(sent) <= 1:
+					continue
 
-			count += 1
+				# Proteins and Genes in sentence
+				results_prge = becas.annotate_text(sent, groups={
+					"PRGE": True
+				})['entities']
 
-			if count >= 10:
-				break
+				# Add the gene name to data
+				for prge in results_prge:
+					data['genes'].append(prge.split('|')[0])
+
+				# Diseases in sentence
+				results_diso = becas.annotate_text(sent, groups={
+					"DISO": True
+				})['entities']
+
+				# Add the gene name to data
+				for diso in results_diso:
+					data['diseases'].append(diso.split('|')[0])
+
+				output.append(data)
+	return output
 
 
 def main():
@@ -56,7 +87,7 @@ def main():
 
 	# customNamedEntities(diseaseFileName, 'gene', notDiseaseFileName, 'not gene', textFileName)
 
-	customNamedEntities(textFileName)
+	print(customNamedEntities(textFileName))
 	return 0
 
 if __name__ == "__main__":
