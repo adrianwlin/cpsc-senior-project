@@ -9,8 +9,10 @@ from nltk.corpus import names
 import enchant
 import codecs
 import pickle
+import os
 from random import shuffle
 import becas
+from os.path import dirname
 from customnamedentitiesgenes import customNamedEntities
 becas.email = 'tbaldy123@gmail.com'
 becas.tool = 'gene-disease-relationship-finder'
