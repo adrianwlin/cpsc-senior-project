@@ -9,3 +9,5 @@ Note that there is an existing list of Human genes, but to check this for every 
 Got the full list of human gene names here: http://www.ensembl.org/biomart/martview/4adf27e2d42c7e363f522f1e3c3ee05a
 
 NCBI: https://www.ncbi.nlm.nih.gov/CBBresearch/Dogan/DISEASE/
+
+NER accuracy paper: https://www.ncbi.nlm.nih.gov/pubmed/25946862 (For recognitions of both gene and protein names, we achieved 97.2% for precision (P), 95.2% for recall (R), and 96.1 for F-measure. While for protein names recognition we gained 98.1% for P, 97.5% for R and 97.7 for F-measure.)

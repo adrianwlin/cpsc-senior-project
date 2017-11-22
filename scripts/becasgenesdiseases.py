@@ -33,6 +33,7 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 		# 				lengthInChars: int, # Length of disease name
 		# 				lengthInWords: int, # Length of disease name
 		# 				name: string # Full disease name
+		# 				cui: string # Disease Concept Unique Identifier
 		# 			}]
 		# }, {
 		# 	...
@@ -84,6 +85,9 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 					"DISO": True
 				})['entities']
 
+				print "results_diso are: "
+				print results_diso
+
 				# Add the gene name to data
 				for diso in results_diso:
 					token = diso.split('|')[0]
@@ -92,6 +96,17 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 					dis['lengthInChars'] = len(token)
 					dis['lengthInWords'] = len(token.split(' '))
 					dis['name'] = token
+
+					# Add the CUI code to the output data
+					codes = diso.split('|')[1].split(':')[1]
+					if len(codes[1] == 8 and codes[1][0] == 'C'):
+						dis['cui'] = codes[1]
+					else:
+						dis['cui'] = ''
+						for elem in codes:
+							if len(elem == 8 and elem[0] == 'C'):
+								dis['cui'] = elem
+								break
 
 					# Update data
 					data['diseases'].append(dis)
