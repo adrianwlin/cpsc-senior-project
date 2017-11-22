@@ -1,16 +1,22 @@
 import sys
 
-import nltk, re, pprint
+import nltk
+import re
+import pprint
 from nltk import word_tokenize, pos_tag, ne_chunk
 from nltk.tree import Tree
 from nltk.corpus import names
 import enchant
 import codecs
+import pickle
+import os
 from random import shuffle
 import becas
+from os.path import dirname
 from customnamedentitiesgenes import customNamedEntities
 becas.email = 'tbaldy123@gmail.com'
 becas.tool = 'gene-disease-relationship-finder'
+
 
 def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 	d = enchant.Dict("en_US") # English Dictionary
@@ -85,9 +91,6 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 					"DISO": True
 				})['entities']
 
-				print "results_diso are: "
-				print results_diso
-
 				# Add the gene name to data
 				for diso in results_diso:
 					token = diso.split('|')[0]
@@ -98,13 +101,13 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 					dis['name'] = token
 
 					# Add the CUI code to the output data
-					codes = diso.split('|')[1].split(':')[1]
-					if len(codes[1] == 8 and codes[1][0] == 'C'):
+					codes = diso.split('|')[1].split(':')
+					if len(codes[1]) == 8 and codes[1][0] == 'C':
 						dis['cui'] = codes[1]
 					else:
 						dis['cui'] = ''
 						for elem in codes:
-							if len(elem == 8 and elem[0] == 'C'):
+							if len(elem) == 8 and elem[0] == 'C':
 								dis['cui'] = elem
 								break
 
@@ -115,42 +118,42 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 				output.append(data)
 	return output
 
-
 def main():
-	# Check correct number of arguments
-	if len(sys.argv) < 2:
-		print("Format: python becasgenesdiseases.py <txtfilename>.txt")
-		return 1
+    # Check correct number of arguments
+    if len(sys.argv) < 2:
+        print("Format: python becasgenesdiseases.py <txtfilename>.txt")
+        return 1
 
-	# Text file to run the gene classifier on
-	textFileName = None
-	if len(sys.argv) >= 2:
-		textFileName = sys.argv[1]
-		if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
-			print("Invalid text file name.")
-			print("Format: python becasgenesdiseases.py <txtfilename>.txt")
-			return 1
-	
-	# If no gene file and non-gene file to train on, run becasNER
-	# without differing between proteins and genes
-	# Otherwise, also take this into account to differentiate proteins and genes
-	if len(sys.argv) < 4:
-		print(becasNER(textFileName))
-	else:
-		geneFileName = sys.argv[2]
-		if len(geneFileName) < 4 or (geneFileName[-4:] != ".txt"):
-			print("Invalid gene file name.")
-			print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
-			return 1
+    # Text file to run the gene classifier on
+    textFileName = None
+    if len(sys.argv) >= 2:
+        textFileName = sys.argv[1]
+        if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
+            print("Invalid text file name.")
+            print("Format: python becasgenesdiseases.py <txtfilename>.txt")
+            return 1
 
-		nonGeneFileName = sys.argv[3]
-		if len(nonGeneFileName) < 4 or (nonGeneFileName[-4:] != ".txt"):
-			print("Invalid non-gene file name.")
-			print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
-			return 1
+    # If no gene file and non-gene file to train on, run becasNER
+    # without differing between proteins and genes
+    # Otherwise, also take this into account to differentiate proteins and genes
+    if len(sys.argv) < 4:
+        print(becasNER(textFileName))
+    else:
+        geneFileName = sys.argv[2]
+        if len(geneFileName) < 4 or (geneFileName[-4:] != ".txt"):
+            print("Invalid gene file name.")
+            print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
+            return 1
 
-		print(becasNER(textFileName, geneFileName, nonGeneFileName))
-	return 0
+        nonGeneFileName = sys.argv[3]
+        if len(nonGeneFileName) < 4 or (nonGeneFileName[-4:] != ".txt"):
+            print("Invalid non-gene file name.")
+            print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
+            return 1
+
+        print(becasNER(textFileName, geneFileName, nonGeneFileName))
+    return 0
+
 
 if __name__ == "__main__":
-	main()
+    main()
