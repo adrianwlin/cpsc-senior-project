@@ -1,0 +1,6 @@
+BRCA1 and BRCA2 genes
+Most inherited cases of breast cancer are associated with two abnormal genes: BRCA1 (BReast CAncer gene one) and BRCA2 (BReast CAncer gene two).
+
+Everyone has BRCA1 and BRCA2 genes. The function of the BRCA genes is to repair cell damage and keep breast, ovarian, and other cells growing normally. But when these genes contain abnormalities or mutations that are passed from generation to generation, the genes don't function normally and breast, ovarian, and other cancer risk increases. Abnormal BRCA1 and BRCA2 genes may account for up to 10% of all breast cancers, or 1 out of every 10 cases.
+
+Having an abnormal BRCA1 or BRCA2 gene doesn't mean you will be diagnosed with breast cancer. Researchers are learning that other mutations in pieces of chromosomes -- called SNPs (single nucleotide polymorphisms) -- may be linked to higher breast cancer risk in women with an abnormal BRCA1 gene as well as women who didn't inherit an abnormal breast cancer gene.

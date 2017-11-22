@@ -119,40 +119,56 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 	return output
 
 def main():
-    # Check correct number of arguments
-    if len(sys.argv) < 2:
-        print("Format: python becasgenesdiseases.py <txtfilename>.txt")
-        return 1
+	# Check correct number of arguments
+	if len(sys.argv) < 2:
+		print("Format: python becasgenesdiseases.py <txtfilename>.txt")
+		return 1
 
-    # Text file to run the gene classifier on
-    textFileName = None
-    if len(sys.argv) >= 2:
-        textFileName = sys.argv[1]
-        if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
-            print("Invalid text file name.")
-            print("Format: python becasgenesdiseases.py <txtfilename>.txt")
-            return 1
+	# Text file to run the gene classifier on
+	textFileName = None
+	if len(sys.argv) >= 2:
+			textFileName = sys.argv[1]
+			if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
+				print("Invalid text file name.")
+				print("Format: python becasgenesdiseases.py <txtfilename>.txt")
+				return 1
 
-    # If no gene file and non-gene file to train on, run becasNER
-    # without differing between proteins and genes
-    # Otherwise, also take this into account to differentiate proteins and genes
-    if len(sys.argv) < 4:
-        print(becasNER(textFileName))
-    else:
-        geneFileName = sys.argv[2]
-        if len(geneFileName) < 4 or (geneFileName[-4:] != ".txt"):
-            print("Invalid gene file name.")
-            print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
-            return 1
+	# If no gene file and non-gene file to train on, run becasNER
+	# without differing between proteins and genes
+	# Otherwise, also take this into account to differentiate proteins and genes
+	if len(sys.argv) < 4:
+		entityList = becasNER(textFileName)
+	else:
+		geneFileName = sys.argv[2]
+		if len(geneFileName) < 4 or (geneFileName[-4:] != ".txt"):
+			print("Invalid gene file name.")
+			print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
+			return 1
 
-        nonGeneFileName = sys.argv[3]
-        if len(nonGeneFileName) < 4 or (nonGeneFileName[-4:] != ".txt"):
-            print("Invalid non-gene file name.")
-            print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
-            return 1
+		nonGeneFileName = sys.argv[3]
+		if len(nonGeneFileName) < 4 or (nonGeneFileName[-4:] != ".txt"):
+			print("Invalid non-gene file name.")
+			print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
+			return 1
 
-        print(becasNER(textFileName, geneFileName, nonGeneFileName))
-    return 0
+		entityList = becasNER(textFileName, geneFileName, nonGeneFileName)
+
+	# Print and check output
+	print entityList
+
+	# Dump this object into a pickle file for Relationship Extractor to use
+	pickleDumpFile = textFileName + '-becasExtractedEntities'
+	# Open pickleDumpFile for writing and dump
+	f = open(pickleDumpFile,'wb')
+	pickle.dump(entityList,f)
+	f.close()
+
+	## Example code for reading pickle file
+	# f = open(pickleDumpFile,'r')  
+	# testLoad = pickle.load(f)
+	# print(testLoad == entityList)
+
+	return 0
 
 
 if __name__ == "__main__":
