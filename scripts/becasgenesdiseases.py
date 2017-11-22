@@ -32,13 +32,14 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 		# 				index: int, # Index into sentence
 		# 				lengthInChars: int, # Length of gene name
 		# 				lengthInWords: int, # Length of gene name
-		# 				name: string # Full gene name
+		# 				name: string, # Full gene name
+		# 				uniprot: string # UNIPROT code of gene
 		# 			}],
 		# 	diseases: [{
 		# 				index: int, # Index into sentence
 		# 				lengthInChars: int, # Length of disease name
 		# 				lengthInWords: int, # Length of disease name
-		# 				name: string # Full disease name
+		# 				name: string, # Full disease name
 		# 				cui: string # Disease Concept Unique Identifier
 		# 			}]
 		# }, {
@@ -85,6 +86,17 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 							data['genes'].append(gene)
 					else:
 						data['genes'].append(gene)
+
+					# Add the CUI code to the output data
+					codes = prge.split('|')[1].split(':')
+					if len(codes[1]) == 6 and codes[1][0] == 'P':
+						gene['uniprot'] = codes[1]
+					else:
+						gene['uniprot'] = ''
+						for elem in codes:
+							if len(elem) == 6 and elem[0] == 'P':
+								gene['uniprot'] = elem
+								break
 
 				# Diseases in sentence
 				results_diso = becas.annotate_text(sent, groups={
