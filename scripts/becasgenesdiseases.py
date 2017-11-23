@@ -48,9 +48,14 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
         # ...]
         output = []
 
+        num_processed = 0
+
         # For each line, classify and print result
         for line in f:
-            for sent in nltk.tokenize.sent_tokenize(line.decode('utf-8')):
+            sents = nltk.tokenize.sent_tokenize(line.decode('utf-8'))
+            for sent in sents:
+                if num_processed % 20 == 0:
+                    print num_processed, "processed"
                 # Initialize data (the next entry in output)
                 data = {}
                 data['line'] = sent
@@ -129,6 +134,7 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 
                 # Update output
                 output.append(data)
+                num_processed += 1
     return output
 
 
@@ -168,7 +174,7 @@ def main():
         entityList = becasNER(textFileName, geneFileName, nonGeneFileName)
 
     # Print and check output
-    print entityList
+    # print entityList
 
     # Dump this object into a pickle file for Relationship Extractor to use
     pickleDumpFile = textFileName + '-becasExtractedEntities'
