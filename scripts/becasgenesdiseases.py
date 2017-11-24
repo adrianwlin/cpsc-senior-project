@@ -181,7 +181,8 @@ def main():
     # print entityList
 
     # Dump this object into a pickle file for Relationship Extractor to use
-    pickleDumpFile = textFileName + '-becasExtractedEntities.p'
+    name, ext = os.path.splitext(textFileName)
+    pickleDumpFile = name + '_becas.p'
     # Open pickleDumpFile for writing and dump
     f = open(pickleDumpFile, 'wb')
     pickle.dump(entityList, f)
