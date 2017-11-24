@@ -67,9 +67,13 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
                     continue
 
                 # Proteins and Genes in sentence
-                results_prge = becas.annotate_text(sent, groups={
-                    "PRGE": True
-                })['entities']
+                try:
+                    results_prge = becas.annotate_text(sent, groups={
+                        "PRGE": True
+                    })['entities']
+                except ServiceUnavailable:
+                    print "Service Unavailable! Processed", num_processed, "sentences"
+                    return output
 
                 # Add the gene name to data
                 for prge in results_prge:
@@ -177,7 +181,7 @@ def main():
     # print entityList
 
     # Dump this object into a pickle file for Relationship Extractor to use
-    pickleDumpFile = textFileName + '-becasExtractedEntities'
+    pickleDumpFile = textFileName + '-becasExtractedEntities.p'
     # Open pickleDumpFile for writing and dump
     f = open(pickleDumpFile, 'wb')
     pickle.dump(entityList, f)
