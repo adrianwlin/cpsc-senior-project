@@ -15,7 +15,7 @@ import becas
 from os.path import dirname
 from customnamedentitiesgenes import customNamedEntities
 becas.email = 'tbaldy123@gmail.com'
-becas.tool = 'gene-disease-relationship-finder'
+becas.tool = '490-gene-disease-relationship-finder'
 
 
 def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
@@ -79,8 +79,8 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 					if geneFileName != None and notGeneFileName != None:
 						classifier = customNamedEntities(geneFileName, 'gene', notGeneFileName, 'protein')
 						cl = classifier.classify({'len': len(token), \
-								'cap_frac': (sum(map(str.isupper, token)) + 0.0)/len(token), \
-								'num_frac': (sum(map(str.isdigit, token)) + 0.0)/len(token), \
+								'cap_frac': (sum(c.isupper() for c in token) + 0.0)/len(token), \
+								'num_frac': (sum(c.isdigit() for c in token) + 0.0)/len(token), \
 								'dict': d.check(token)})
 						if cl == 'gene':
 							data['genes'].append(gene)
@@ -139,11 +139,11 @@ def main():
 	# Text file to run the gene classifier on
 	textFileName = None
 	if len(sys.argv) >= 2:
-			textFileName = sys.argv[1]
-			if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
-				print("Invalid text file name.")
-				print("Format: python becasgenesdiseases.py <txtfilename>.txt")
-				return 1
+		textFileName = sys.argv[1]
+		if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
+			print("Invalid text file name.")
+			print("Format: python becasgenesdiseases.py <txtfilename>.txt")
+			return 1
 
 	# If no gene file and non-gene file to train on, run becasNER
 	# without differing between proteins and genes
@@ -166,7 +166,7 @@ def main():
 		entityList = becasNER(textFileName, geneFileName, nonGeneFileName)
 
 	# Print and check output
-	print entityList
+	# print entityList
 
 	# Dump this object into a pickle file for Relationship Extractor to use
 	pickleDumpFile = textFileName + '-becasExtractedEntities'
@@ -179,6 +179,23 @@ def main():
 	# f = open(pickleDumpFile,'r')  
 	# testLoad = pickle.load(f)
 	# print(testLoad == entityList)
+	
+	geneCount = 0
+	diseaseCount = 0
+	for line in entityList:
+		geneCount += len(line['genes'])
+
+		for gene in line['genes']:
+			if sum(c.islower() for c in gene['name']) > 0:
+				print 'found lowercase gene: ' + gene['name']
+				geneCount -= 1
+
+		diseaseCount += len(line['diseases'])
+
+	print 'Total genes found is:'
+	print geneCount
+	print 'Total disease found is:'
+	print diseaseCount
 
 	return 0
 
