@@ -169,7 +169,7 @@ def main():
 	# print entityList
 
 	# Dump this object into a pickle file for Relationship Extractor to use
-	pickleDumpFile = textFileName + '-becasExtractedEntities'
+	pickleDumpFile = textFileName
 	# Open pickleDumpFile for writing and dump
 	f = open(pickleDumpFile,'wb')
 	pickle.dump(entityList,f)
