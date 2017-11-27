@@ -27,8 +27,8 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 			# Number of numbers out of length
 			# Not a dictionary word
 			featuresets.append(({'word': word, 'len': len(word), \
-				'cap_frac': (sum(map(str.isupper, word)) + 0.0)/len(word), \
-				'num_frac': (sum(map(str.isdigit, word)) + 0.0)/len(word), \
+				'cap_frac': (sum(c.isupper() for c in word) + 0.0)/len(word), \
+				'num_frac': (sum(c.isdigit() for c in word) + 0.0)/len(word), \
 				'dict': d.check(word)}, label1))
 
 	for line in f2:
@@ -48,26 +48,6 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	shuffle(featuresets)
 	train_set, test_set = featuresets[len(featuresets)/2:], featuresets[:len(featuresets)/2]
 	classifier = nltk.NaiveBayesClassifier.train(train_set)
-
-	# print featuresets
-
-	# Test some basic cases
-	# testword1 = 'A2M'
-	# testword2 = 'Hello'
-	# testword3 = '1234'
-
-	# print "Classifier classifies A2M as " + classifier.classify({'len': len(testword1), \
-	# 			'cap_frac': (sum(map(str.isupper, testword1)) + 0.0)/len(testword1), \
-	# 			'num_frac': (sum(map(str.isdigit, testword1)) + 0.0)/len(testword1), \
-	# 			'dict': d.check(testword1)})
-	# print "Classifier classifies Hello as " + classifier.classify({'len': len(testword2), \
-	# 			'cap_frac': (sum(map(str.isupper, testword2)) + 0.0)/len(testword2), \
-	# 			'num_frac': (sum(map(str.isdigit, testword2)) + 0.0)/len(testword2), \
-	# 			'dict': d.check(testword2)})
-	# print "Classifier classifies 1234 as " + classifier.classify({'len': len(testword3), \
-	# 			'cap_frac': (sum(map(str.isupper, testword3)) + 0.0)/len(testword3), \
-	# 			'num_frac': (sum(map(str.isdigit, testword3)) + 0.0)/len(testword3), \
-	# 			'dict': d.check(testword3)})
 
 	f1.close()
 	f2.close()
@@ -91,8 +71,8 @@ def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 
 				# Classification of word
 				cl = classifier.classify({'len': len(token), \
-					'cap_frac': (sum(map(str.isupper, token)) + 0.0)/len(token), \
-					'num_frac': (sum(map(str.isdigit, token)) + 0.0)/len(token), \
+					'cap_frac': (sum(c.isupper() for c in token) + 0.0)/len(token), \
+					'num_frac': (sum(c.isdigit() for c in word) + 0.0)/len(token), \
 					'dict': d.check(token)})
 
 				# Print output
