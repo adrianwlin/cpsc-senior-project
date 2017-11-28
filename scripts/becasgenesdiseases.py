@@ -17,6 +17,8 @@ from customnamedentitiesgenes import customNamedEntities
 becas.email = 'tbaldy123@gmail.com'
 becas.tool = '490-gene-disease-relationship-finder'
 
+# Stole this from https://stackoverflow.com/questions/1342000/how-to-make-the-python-interpreter-correctly-handle-non-ascii-characters-in-stri
+def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
 
 def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 	d = enchant.Dict("en_US") # English Dictionary
@@ -50,6 +52,7 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 
 		# For each line, classify and print result
 		for line in f:
+			line = removeNonAscii(line)
 			for sent in nltk.tokenize.sent_tokenize(line):
 				# Initialize data (the next entry in output)
 				data = {}
@@ -60,6 +63,8 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 				# Handle newline with no text
 				if len(sent) <= 1:
 					continue
+
+				sent = unicode(sent, errors='ignore')
 
 				# Proteins and Genes in sentence
 				results_prge = becas.annotate_text(sent, groups={
@@ -137,13 +142,11 @@ def main():
 		return 1
 
 	# Text file to run the gene classifier on
-	textFileName = None
-	if len(sys.argv) >= 2:
-		textFileName = sys.argv[1]
-		if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
-			print("Invalid text file name.")
-			print("Format: python becasgenesdiseases.py <txtfilename>.txt")
-			return 1
+	textFileName = sys.argv[1]
+	if len(textFileName) < 4 or (textFileName[-4:] != ".txt"):
+		print("Invalid text file name.")
+		print("Format: python becasgenesdiseases.py <txtfilename>.txt")
+		return 1
 
 	# If no gene file and non-gene file to train on, run becasNER
 	# without differing between proteins and genes
@@ -179,23 +182,51 @@ def main():
 	# f = open(pickleDumpFile,'r')  
 	# testLoad = pickle.load(f)
 	# print(testLoad == entityList)
+
+	genesFoundFile = open(textFileName[:-4] + 'genesFound.txt','wb')
+	diseasesFoundFile = open(textFileName[:-4] + 'diseasesFound.txt','wb')
+
+	for line in entityList:
+		for gene in line['genes']:
+			genesFoundFile.write(gene + '\n')
+		for disease in line['diseases']:
+			diseasesFoundFile.write(diseases + '\n')
+
+	genesFoundFile.close()
+	diseasesFoundFile.close()
 	
+	'''
+	The following is all test code to determine accuracy.
+	It should only be run on files consisting *only* of gene and disease names.
+	'''
 	geneCount = 0
 	diseaseCount = 0
+	wrongGenesCount = 0
+	wrongDiseasesCount = 0
+
 	for line in entityList:
 		geneCount += len(line['genes'])
 
 		for gene in line['genes']:
-			if sum(c.islower() for c in gene['name']) > 0:
-				print 'found lowercase gene: ' + gene['name']
-				geneCount -= 1
+			if len(gene['name'].split(' is an entity. ')) > 1:
+				print 'found wrong gene: ' + gene['name']
+				wrongGenesCount += 1
 
 		diseaseCount += len(line['diseases'])
+
+		for disease in line['diseases']:
+			if len(disease['name'].split(' is an entity. ')) > 1:
+				print 'found wrong disease: ' + disease['name']
+				wrongDiseasesCount += 1
 
 	print 'Total genes found is:'
 	print geneCount
 	print 'Total disease found is:'
 	print diseaseCount
+	print 'Also found this many wrong genes:'
+	print wrongGenesCount
+	print 'Also found this many wrong diseases:'
+	print wrongDiseasesCount
 
 	return 0
 

@@ -14,12 +14,12 @@ def upload_file():
       f = request.files['file']
       tempname = 'temp/' + secure_filename(f.filename)
       f.save(tempname)
-      subprocess.call(["python", "scripts/namedentityextractor.py", tempname])
+      subprocess.call(["python", "scripts/becasgenesdiseases.py", tempname])
 
-      s = ""
-      for line in f:
-      	s += line
-      	s += '\n'
+      # s = ""
+      # for line in f:
+      # 	s += line
+      # 	s += '\n'
       return s
 
 if __name__ == "__main__":
