@@ -26,6 +26,8 @@ def label_data(pickle_file, outfile, connection):
     """
     with open(pickle_file, "r") as f:
         labeled_list = pickle.load(f)
+        # sentences with both genes and disease tags
+        good_sentences = []
         no_good = 0
         good = 0
         positive = 0
@@ -37,37 +39,52 @@ def label_data(pickle_file, outfile, connection):
                 good += len(entry["genes"]) * len(entry["diseases"])
                 for gene in entry["genes"]:
                     uniprot = gene["uniprot"]
+                    # if the uniprot ID is blank
                     if not uniprot:
                         continue
                     cur = connection.cursor()
                     cur.execute(
-                        "SELECT geneNID FROM geneAttributes WHERE uniprotId = \"{}\"".format(uniprot))
+                        "SELECT geneNID, geneName FROM geneAttributes WHERE uniprotId = \"{}\"".format(uniprot))
                     rows = cur.fetchall()
+                    # If we cannot find this gene in the db, continue
                     if len(rows) != 1:
                         continue
-                    geneNID = rows[0][0]
+                    geneNID, geneName = rows[0]
 
                     for disease in entry["diseases"]:
                         cui = disease["cui"]
                         cur = connection.cursor()
                         cur.execute(
-                            "SELECT diseaseNID FROM diseaseAttributes WHERE diseaseId = \"{}\"".format(cui))
+                            "SELECT diseaseNID, diseaseName FROM diseaseAttributes WHERE diseaseId = \"{}\"".format(cui))
                         rows = cur.fetchall()
+                        # If we cannot find this disease in the db, continue
                         if len(rows) != 1:
                             continue
-                        diseaseNID = rows[0][0]
+                        diseaseNID, diseaseName = rows[0]
 
                         cur = connection.cursor()
                         cur.execute(
                             "SELECT associationType FROM geneDiseaseNetwork WHERE geneNID = \"{}\" AND diseaseNID = \"{}\"".format(geneNID, diseaseNID))
                         rows = cur.fetchall()
+                        # If the association exists, label true
                         if len(rows) == 1:
+                            entry.update(
+                                {"labels": {(gene["name"], disease["name"]): True}})
                             positive += 1
                         else:
+                            entry.update(
+                                {"labels": {(gene["name"], disease["name"]): False}})
                             negative += 1
-
+                # If some gene/disease pair has been labeled, add it to good_sentences.
+                if "labels" in entry:
+                    good_sentences.append(entry.copy())
+        print len(good_sentences), "good sentences"
         print no_good, good
         print "positive: {}, negative {}".format(positive, negative)
+
+        f = open(outfile, 'wb')
+        pickle.dump(labeled_list, f)
+        f.close()
 
 
 def main():
