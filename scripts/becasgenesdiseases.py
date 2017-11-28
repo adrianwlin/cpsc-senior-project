@@ -22,6 +22,7 @@ def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
 
 def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 	d = enchant.Dict("en_US") # English Dictionary
+	output = []
 	## Test named entity extractor on a file
 	if txtFileName != None:
 		# Open text file
@@ -48,7 +49,6 @@ def becasNER(txtFileName, geneFileName=None, notGeneFileName=None):
 		# 	...
 		# }
 		# ...]
-		output = []
 
 		# For each line, classify and print result
 		for line in f:
@@ -190,7 +190,7 @@ def main():
 		for gene in line['genes']:
 			genesFoundFile.write(gene + '\n')
 		for disease in line['diseases']:
-			diseasesFoundFile.write(diseases + '\n')
+			diseasesFoundFile.write(disease + '\n')
 
 	genesFoundFile.close()
 	diseasesFoundFile.close()

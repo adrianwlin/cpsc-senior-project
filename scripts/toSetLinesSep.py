@@ -26,7 +26,7 @@ def main():
 	totalCount = 0
 
 	for line in f:
-		if random.randint(0, 6) != 0:
+		if random.randint(0, 9) != 0:
 			continue
 		if line[-1] == '\n':
 			line = line[:-1]
