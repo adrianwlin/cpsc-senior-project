@@ -107,7 +107,7 @@ def scrape_abstracts(diseases_file, out_file, start_index, max_sentences):
     gene, diseases, sentence mentioning the gene and disease"""
     num_abstracts = 0
     num_sent = 0
-    num_pairs = 0
+    pairs_processed = 0
     out = open(out_file, "w")
     with open(diseases_file, "r") as f:
         text = f.readlines()
@@ -119,7 +119,7 @@ def scrape_abstracts(diseases_file, out_file, start_index, max_sentences):
         output = []
         browser = webdriver.Chrome()
         for i in shuffled_indices[start_index:]:
-            num_pairs += 1
+            pairs_processed += 1
             line = text[i]
             line_split = line.split("\t")
             ensembl_id, gene, doid, disease, z_score, confidence, url = line_split
@@ -164,7 +164,7 @@ def scrape_abstracts(diseases_file, out_file, start_index, max_sentences):
                             print num_abstracts, "abstracts scraped"
                             print num_sent, "sentences written"
                             return
-            print "sentence count: ", num_sent, "pairs processed: ", num_pairs
+            print "sentence count: ", num_sent, "pairs processed: ", pairs_processed
     print num_pairs, "disease/gene pairs processed"
     print num_abstracts, "abstracts scraped"
     print num_sent, "sentences written"
