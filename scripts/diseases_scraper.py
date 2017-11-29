@@ -11,6 +11,27 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from os.path import dirname
+"""
+This script scrapes the DIESASES tool for paper abstracts which mention gene
+and disease pairs and write out sentences in the abstracts which contain both a
+gene and a disease. The tool can be found at diseases.jensenlab.org.
+
+diseases_scraper.py [in_file] [out_file] [start_index] [num_sentences]
+
+The in_file is supplied by the DISEASES website
+(diseases.jensenlab.org/Downloads) and is a tab separated file with each line
+containing (gene ensembl id, gene, diease DOID, disease, z_score, confidence, url)
+tuples.
+
+The out_file is a txt file with one sentence per line.
+
+Before the abstracts are scraped, the rows of the in_file are scrambled with a
+a set random seed (1234). start_index specifies the starting index in the
+shuffled ordering. This argument is used when you want to scrape new data that
+does not overlap with the data you already have.
+
+num_sentences specifies the number of sentences that you want.
+"""
 
 
 def remove_tags(html):
@@ -81,11 +102,12 @@ def convertToDict(gene, disease, sent):
     return data
 
 
-def scrape_abstracts(diseases_file, out_file, max_sentences):
+def scrape_abstracts(diseases_file, out_file, start_index, max_sentences):
     """writes to a text file with tab separated tokens
     gene, diseases, sentence mentioning the gene and disease"""
     num_abstracts = 0
     num_sent = 0
+    num_pairs = 0
     out = open(out_file, "w")
     with open(diseases_file, "r") as f:
         text = f.readlines()
@@ -96,11 +118,12 @@ def scrape_abstracts(diseases_file, out_file, max_sentences):
         # indices = random.sample(range(num_pairs), 3)
         output = []
         browser = webdriver.Chrome()
-        for i in shuffled_indices:
+        for i in shuffled_indices[start_index:]:
+            num_pairs += 1
             line = text[i]
             line_split = line.split("\t")
             ensembl_id, gene, doid, disease, z_score, confidence, url = line_split
-            print gene, disease, url
+            # print gene, disease, url
             browser.get(url)
             timeout = 5
             try:
@@ -132,33 +155,33 @@ def scrape_abstracts(diseases_file, out_file, max_sentences):
                             disease_found = True
                             break
                     if gene_found and disease_found:
-                        out.write(
-                            "\t".join([gene_token, disease_token, sent]).encode('utf-8') + "\n")
+                        out.write(sent.encode('utf-8') + "\n")
+                        # out.write(
+                        #     "\t".join([gene_token, disease_token, sent]).encode('utf-8') + "\n")
                         num_sent += 1
                         if num_sent == max_sentences:
+                            print num_pairs, "disease/gene pairs processed"
                             print num_abstracts, "abstracts scraped"
                             print num_sent, "sentences written"
                             return
-            print "sentence count: ", num_sent
+            print "sentence count: ", num_sent, "pairs processed: ", num_pairs
+    print num_pairs, "disease/gene pairs processed"
     print num_abstracts, "abstracts scraped"
     print num_sent, "sentences written"
 
 
 def main():
-    """diseases_scraper.py [in_file] [out_file] [num_sentences]
+    """diseases_scraper.py [in_file] [out_file] [start_index] [num_sentences]
     """
-    if len(sys.argv) != 4:
-        print "diseases_scraper.py [out_file] [num_sentences]"
+    if len(sys.argv) != 5:
+        print "diseases_scraper.py [in_file] [out_file] [start_index] [num_sentences]"
         return 1
     else:
         in_file = os.path.abspath(sys.argv[1])
         out_file = os.path.abspath(sys.argv[2])
-        max_sentences = int(sys.argv[3])
-    scrape_abstracts(in_file, out_file, max_sentences)
-    # data = scrape_abstracts(diseases_file)
-    # out_path = os.path.join(
-    #     root_folder, "data/diseases_training.p")
-    # pickle.dump(data, open(out_path, "wb"))
+        start_index = int(sys.argv[3])
+        max_sentences = int(sys.argv[4])
+    scrape_abstracts(in_file, out_file, start_index, max_sentences)
 
 
 if __name__ == "__main__":
