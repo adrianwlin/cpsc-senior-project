@@ -188,9 +188,9 @@ def main():
 
 	for line in entityList:
 		for gene in line['genes']:
-			genesFoundFile.write(gene + '\n')
+			genesFoundFile.write(gene['name'] + '\n')
 		for disease in line['diseases']:
-			diseasesFoundFile.write(disease + '\n')
+			diseasesFoundFile.write(disease['name'] + '\n')
 
 	genesFoundFile.close()
 	diseasesFoundFile.close()
