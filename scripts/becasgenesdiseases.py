@@ -201,7 +201,7 @@ def main():
         entityList = becasNER(textFileName)
     elif len(sys.argv) == 3:
         start_line = int(sys.argv[2])
-        becasNER(textFileName, start_line=start_line)
+        entityList = becasNER(textFileName, start_line=start_line)
     else:
         geneFileName = sys.argv[2]
         if len(geneFileName) < 4 or (geneFileName[-4:] != ".txt"):
@@ -214,8 +214,20 @@ def main():
             print("Invalid non-gene file name.")
             print("Format: python becasgenesdiseases.py <txtfilename>.txt <genefilename>.txt <non-genefilename>.txt")
             return 1
-        becasNER(
+        entityList = becasNER(
             textFileName, geneFileName=geneFileName, nonGeneFileName=nonGeneFileName)
+
+    # Dump this object into a pickle file for Relationship Extractor to use
+	pickleDumpFile = textFileName
+	# Open pickleDumpFile for writing and dump
+	f = open(pickleDumpFile,'wb')
+	pickle.dump(entityList,f)
+	f.close()
+
+	## Example code for reading pickle file
+	# f = open(pickleDumpFile,'r')  
+	# testLoad = pickle.load(f)
+	# print(testLoad == entityList)
 
     genesFoundFile = open(textFileName[:-4] + 'genesFound.txt', 'wb')
     diseasesFoundFile = open(textFileName[:-4] + 'diseasesFound.txt', 'wb')
