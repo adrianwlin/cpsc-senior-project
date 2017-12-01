@@ -1,6 +1,8 @@
 from flask import Flask, redirect, render_template, request, url_for
 from werkzeug import secure_filename
 import subprocess
+import urllib2
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
@@ -12,9 +14,25 @@ def index():
 def upload_file():
    if request.method == 'POST':
       f = request.files['file']
-      tempname = 'temp/' + secure_filename(f.filename)
-      f.save(tempname)
-      subprocess.call(["python", "scripts/namedentityextractor.py", tempname])
+
+      s = 'Found entities:\n\n'
+
+      if f == None or not f:
+        furl = request.form['file-url']
+        if furl == '' or furl == None or not furl:
+          return 'No File Found!'
+
+        page = urllib2.urlopen('http://yahoo.com').read()
+        soup = BeautifulSoup(page)
+        soup.prettify()
+        for pars in soup.findAll('p'):
+          for par in pars:
+            s += par.get_text()
+            return s
+
+      # tempname = 'temp/' + secure_filename(f.filename)
+      # f.save(tempname)
+      # subprocess.call(["python", "scripts/becasgenesdiseases.py", tempname])
 
       s = ""
       for line in f:

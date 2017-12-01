@@ -30,7 +30,7 @@ def main():
 			continue
 		if line[-1] == '\n':
 			line = line[:-1]
-		outLine += line + ' is a gene. '
+		outLine += line + ' is an entity. '
 		currLine += 1
 		totalCount += 1
 		if currLine >= perLine:
@@ -39,7 +39,7 @@ def main():
 
 	f2.write(outLine)
 
-	print "Total number of genes to detect: " + str(totalCount)
+	print "Total number of entities to detect: " + str(totalCount)
 
 	f.close()
 	f2.close()
