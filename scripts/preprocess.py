@@ -34,6 +34,7 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
     geneDistanceMatrix = []
     diseaseDistanceMatrix = []
     wordEmbedMatrix = []
+    continued = 0
 
     '''
     Train a Word2Vec Model
@@ -42,14 +43,15 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
     class MySentences(object):
         def __init__(self, dirname):
             self.dirname = dirname
-     
+
         def __iter__(self):
             for fname in os.listdir(self.dirname):
                 for line in open(os.path.join(self.dirname, fname)):
                     yield line.split()
-    
+
     # Build Word2Vec Model
-    sentences = MySentences(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'util/word2vectraining')) # a memory-friendly iterator
+    sentences = MySentences(os.path.join(os.path.dirname(os.path.dirname(
+        os.path.realpath(__file__))), 'util/word2vectraining'))  # a memory-friendly iterator
     model = Word2Vec(sentences)
 
     # Test case for the above
@@ -57,38 +59,58 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
     # print(model.wv["breast"])
 
     for entry in labeled_list:
-        words = nltk.word_tokenize(entry["line"])
-        print words
+        sentence = entry["line"]
         genes_diseases = []
         for gene in entry["genes"]:
             genes_diseases.append(gene["name"])
         for dis in entry["diseases"]:
             genes_diseases.append(dis["name"])
-        # Make multi word genes and diseases one token
+        # Put spaces before and after the entity in case.
         for entity in genes_diseases:
-            print entity
-            print len(entity.split(" "))
+            start = sentence.find(entity)
+            end = start + len(entity)
+            start_buffer = ""
+            end_buffer = ""
+            if start > 0 and sentence[start - 1] != " ":
+                start_buffer = " "
+            if end < len(sentence) and sentence[end] != " ":
+                end_buffer = " "
+            sentence = sentence[:start] + start_buffer + \
+                sentence[start:end] + end_buffer + sentence[end:]
+        # Make multi word genes and diseases one token
+        words = nltk.word_tokenize(sentence)
+        for entity in genes_diseases:
             if len(entity.split(" ")) > 1:
                 split = entity.split(" ")
                 first_word = split[0]
-                ind = words.index(first_word)
-                joined = " ".join(words[ind:ind + len(split)])
-                print joined
-                words[ind:ind + len(split)] = joined
-                # print words
+                try:
+                    ind = words.index(first_word)
+                    joined = " ".join(words[ind:ind + len(split)])
+                    words[ind:ind + len(split)] = [joined]
+                except:
+                    pass
+        print words
 
         for gene_dis_pair, label in entry["labels"].items():
             gene = gene_dis_pair[0]
             disease = gene_dis_pair[1]
-            gene_ind = words.index(gene)
-            diesase_ind = words.index(disease)
+            try:
+                gene_ind = words.index(gene)
+            except:
+                continued += 1
+                continue
+            try:
+                disease_ind = words.index(disease)
+            except:
+                continued += 1
+                continue
 
             wordEmbeddingIDs = np.zeros(maxSentenceLen)
             geneDistances = np.zeros(maxSentenceLen)
             diseaseDistances = np.zeros(maxSentenceLen)
 
             for i in range(0, min(maxSentenceLen, len(words))):
-                wordEmbeddingIDs[i] = model.wv[words[i]]
+                # wordEmbeddingIDs[i] = model.wv[words[i]]
 
                 geneDistance = i - int(gene_ind)
                 diseaseDistance = i - int(disease_ind)
@@ -110,7 +132,7 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
             diseaseDistanceMatrix.append(diseaseDistances)
             # boolean to int
             labels.append(int(label))
-        break
+        # break
 
     return np.array(labels, dtype='int32'), np.array(wordEmbedMatrix, dtype='int32'), \
         np.array(geneDistanceMatrix, dtype='int32'), np.array(
@@ -156,16 +178,17 @@ embeddings = []
 # pickle.dump(embeddings, f, -1)
 # f.close()
 
+print len(labeled)
 # :: Create token matrix ::
 train_set = createMatrices(labeled, word2Idx, maxSentenceLen)
-test_set = createMatrices(labeled, word2Idx, maxSentenceLen)
+# test_set = createMatrices(labeled, word2Idx, maxSentenceLen)
+#
+# f = open(outputFilePath, 'wb')
+# pickle.dump(train_set, f, -1)
+# pickle.dump(test_set, f, -1)
+# f.close()
 
-f = open(outputFilePath, 'wb')
-pickle.dump(train_set, f, -1)
-pickle.dump(test_set, f, -1)
-f.close()
-
-print "Data written to pickle file"
-
-for label, freq in labelsDistribution.most_common(100):
-    print "%s : %f%%" % (label, 100 * freq / float(labelsDistribution.N()))
+# print "Data written to pickle file"
+#
+# for label, freq in labelsDistribution.most_common(100):
+#     print "%s : %f%%" % (label, 100 * freq / float(labelsDistribution.N()))
