@@ -117,15 +117,6 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
             diseaseDistanceMatrix, dtype='int32'),
 
 
-def getWordIdx(word, word2Idx):
-    """Returns from the word2Idex table the word index for a given word"""
-    if word in word2Idx:
-        return word2Idx[word]
-    elif word.lower() in word2Idx:
-        return word2Idx[word.lower()]
-    return word2Idx["UNKNOWN"]
-
-
 for entry in labeled:
     tokens = entry["line"].split(" ")
     maxSentenceLen = max(maxSentenceLen, len(tokens))
