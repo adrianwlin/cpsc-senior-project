@@ -8,6 +8,7 @@ import os
 import pickle
 import nltk
 from nltk.probability import FreqDist
+from gensim.models import Word2Vec
 
 
 print "Load dataset"
@@ -33,6 +34,27 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
     geneDistanceMatrix = []
     diseaseDistanceMatrix = []
     wordEmbedMatrix = []
+
+    '''
+    Train a Word2Vec Model
+    Code from: https://rare-technologies.com/word2vec-tutorial/
+    '''
+    class MySentences(object):
+        def __init__(self, dirname):
+            self.dirname = dirname
+     
+        def __iter__(self):
+            for fname in os.listdir(self.dirname):
+                for line in open(os.path.join(self.dirname, fname)):
+                    yield line.split()
+    
+    # Build Word2Vec Model
+    sentences = MySentences(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'util/word2vectraining')) # a memory-friendly iterator
+    model = Word2Vec(sentences)
+
+    # Test case for the above
+    # print("EMBED OF BREAST IS: ")
+    # print(model.wv["breast"])
 
     for entry in labeled_list:
         words = nltk.word_tokenize(entry["line"])
@@ -66,8 +88,7 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
             diseaseDistances = np.zeros(maxSentenceLen)
 
             for i in range(0, min(maxSentenceLen, len(words))):
-                # TODO: get word embeddings
-                # wordEmbeddingIDs[i] = getWordIdx(words[i], word2Idx)
+                wordEmbeddingIDs[i] = model.wv[words[i]]
 
                 geneDistance = i - int(gene_ind)
                 diseaseDistance = i - int(disease_ind)
