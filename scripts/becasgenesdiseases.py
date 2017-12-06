@@ -17,6 +17,8 @@ from customnamedentitiesgenes import customNamedEntities
 becas.email = 'tbaldy123@gmail.com'
 becas.tool = '490-gene-disease-relationship-finder'
 
+BATCH_SIZE = 1000
+
 
 def removeNonAscii(s):
     """
@@ -81,7 +83,7 @@ def becasNER(txtFileName, start_line=0, geneFileName=None, notGeneFileName=None)
         # }
         # ...]
 
-        files_written = 0
+        files_written = start_line / BATCH_SIZE
         sentences_processed = 0
         # For each line, classify and print result
         lines = f.readlines()
@@ -156,7 +158,7 @@ def becasNER(txtFileName, start_line=0, geneFileName=None, notGeneFileName=None)
                 fullOutput.append(data)
 
                 sentences_processed += 1
-                if sentences_processed % 1000 == 0 and sentences_processed > 0:
+                if sentences_processed % BATCH_SIZE == 0 and sentences_processed > 0:
                     dirname = os.path.dirname(txtFileName)
                     if not os.path.exists(os.path.join(dirname, "becas_labeled")):
                         os.makedirs(os.path.join(dirname, "becas_labeled"))

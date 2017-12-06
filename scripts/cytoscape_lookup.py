@@ -83,7 +83,7 @@ def label_data(pickle_file, outfile, connection):
         print "positive: {}, negative {}".format(positive, negative)
 
         f = open(outfile, 'wb')
-        pickle.dump(labeled_list, f)
+        pickle.dump(good_sentences, f)
         f.close()
 
 
