@@ -10,6 +10,8 @@ import nltk
 from nltk.probability import FreqDist
 from gensim.models import Word2Vec
 
+from depParse import depParse
+
 
 print "Load dataset"
 root_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -105,6 +107,23 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
                 continued += 1
                 continue
 
+            # print "HERE IS SOME STUFF"
+            # print "WORDS"
+            # print words
+            # print "GENE"
+            # print gene
+            # print "DISEASE"
+            # print disease
+            # print "GENEIND"
+            # print gene_ind
+            # print "DISEASEIND"
+            # print disease_ind
+
+            dp = depParse(" ".join(words), gene_ind, disease_ind)
+            if dp == None:
+                continued += 1
+                continue
+
             wordEmbeddingIDs = np.zeros(maxSentenceLen)
             geneDistances = np.zeros(maxSentenceLen)
             diseaseDistances = np.zeros(maxSentenceLen)
@@ -133,6 +152,10 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
             # boolean to int
             labels.append(int(label))
         # break
+    print "NUMBER OF SKIPPED"
+    print continued
+    print "NUMBER SUCCEEDED"
+    print len(labels)
 
     return np.array(labels, dtype='int32'), np.array(wordEmbedMatrix, dtype='int32'), \
         np.array(geneDistanceMatrix, dtype='int32'), np.array(
