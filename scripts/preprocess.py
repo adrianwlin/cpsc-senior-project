@@ -85,33 +85,36 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
                 sentence[start:end] + end_buffer + sentence[end:]
         # Make multi word genes and diseases one token
         words = nltk.word_tokenize(sentence)
-        for entity in genes_diseases:
-            if len(entity.split(" ")) > 1:
-                split = entity.split(" ")
-                first_word = split[0]
-                try:
-                    ind = words.index(first_word)
-                    joined = " ".join(words[ind:ind + len(split)])
-                    words[ind:ind + len(split)] = [joined]
-                except:
-                    pass
-        print words
+        # for entity in genes_diseases:
+        #     if len(entity.split(" ")) > 1:
+        #         split = entity.split(" ")
+        #         first_word = split[0]
+        #         try:
+        #             ind = words.index(first_word)
+        #             joined = " ".join(words[ind:ind + len(split)])
+        #             words[ind:ind + len(split)] = [joined]
+        #         except:
+        #             pass
+        # print words
 
         for gene_dis_pair, label in entry["labels"].items():
             gene = gene_dis_pair[0]
+            gene_length = len(gene.split(" "))
             disease = gene_dis_pair[1]
+            disease_length = len(disease.split(" "))
             try:
-                gene_ind = words.index(gene)
+                first_word = gene.split(" ")[0]
+                gene_ind = words.index(first_word)
             except:
                 continued += 1
                 continue
             try:
-                disease_ind = words.index(disease)
+                first_word = disease.split(" ")[0]
+                disease_ind = words.index(first_word)
             except:
                 continued += 1
                 continue
 
-            # print "HERE IS SOME STUFF"
             # print "WORDS"
             # print words
             # print "GENE"
@@ -134,9 +137,19 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
 
             for i in range(0, min(maxSentenceLen, len(words))):
                 # wordEmbeddingIDs[i] = model.wv[words[i]]
+                if i < gene_ind:
+                    geneDistance = i - gene_ind
+                elif gene_ind <= i < gene_ind + gene_length:
+                    geneDistance = 0
+                else:
+                    geneDistance = i - (gene_ind + gene_length - 1)
 
-                geneDistance = i - int(gene_ind)
-                diseaseDistance = i - int(disease_ind)
+                if i < disease_ind:
+                    diseaseDistance = i - disease_ind
+                elif disease_ind <= i < disease_ind + disease_length:
+                    diseaseDistance = 0
+                else:
+                    diseaseDistance = i - (disease_ind + disease_length - 1)
 
                 if geneDistance in distanceMapping:
                     geneDistances[i] = distanceMapping[geneDistance]
