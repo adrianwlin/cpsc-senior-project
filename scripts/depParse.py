@@ -12,7 +12,7 @@ DEP_DEPTH_CAP = 50
 # Stole this from https://stackoverflow.com/questions/1342000/how-to-make-the-python-interpreter-correctly-handle-non-ascii-characters-in-stri
 def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
 
-def depParse(text, index1, index2):
+def depParse(text, index1, index2, text1, text2):
 	# Check if indices are valid
 	if index1 < 0 or index1 >= len(text.split(' ')) or index2 <= 0 or index2 >= len(text.split(' ')):
 		return None
@@ -44,6 +44,27 @@ def depParse(text, index1, index2):
 			'headpos': token.head.pos_,
 			'children': [unicode(child) for child in token.children]
 			});
+
+	'''
+	Find the element of depFeats that has this text value
+	'''
+	def findIndex(li, text):
+		for ind in range(len(li)):
+			if li[ind]['text'] == text:
+				return ind
+		return -1
+
+	if depFeats[index1] != text1:
+		index1 = findIndex(depFeats, text1)
+		if index1 == -1:
+			# Did not even find the word
+			return None
+
+	if depFeats[index2] != text2:
+		index2 = findIndex(depFeats, text2)
+		if index2 == -1:
+			# Did not even find the word
+			return None
 
 	'''
 	This function returns a list of all the direct ancestors of a node.
