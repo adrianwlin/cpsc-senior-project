@@ -9,11 +9,6 @@ import pickle
 import nltk
 from nltk.probability import FreqDist
 from gensim.models import Word2Vec
-# import spacy
-# from spacy.tokenizer import Tokenizer
-# nlp = spacy.load('en')
-# tokenizer = Tokenizer(nlp.vocab)
-
 from depParse import depParse
 
 
@@ -26,6 +21,8 @@ all_words = {}
 maxSentenceLen = 0
 labelsDistribution = FreqDist()
 
+# This dict maps each distance value in range [-30, 30] on to a positive value.
+# The values 0, 1, 2 are reserved for special cases such has padding or out of bounds.
 distanceMapping = {'PADDING': 0, 'LowerMin': 1, 'GreaterMax': 2}
 minDistance = -30
 maxDistance = 30
@@ -41,7 +38,7 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
     geneDistanceMatrix = []
     diseaseDistanceMatrix = []
     wordEmbedMatrix = []
-    continued = 0
+    skipped = 0
 
     # Lists for each feature from depParse (Dependency Tree)
     wordDistanceList = []
@@ -72,13 +69,13 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
 
     for entry in labeled_list:
         sentence = entry["line"]
-        genes_diseases = []
+        entity_names = []
         for gene in entry["genes"]:
-            genes_diseases.append(gene["name"])
+            entity_names.append(gene["name"])
         for dis in entry["diseases"]:
-            genes_diseases.append(dis["name"])
+            entity_names.append(dis["name"])
         # Put spaces before and after the entity for cases like "A B-word" where "A B" is one entity.
-        for entity in genes_diseases:
+        for entity in entity_names:
             start = sentence.find(entity)
             end = start + len(entity)
             start_buffer = ""
@@ -89,36 +86,27 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
                 end_buffer = " "
             sentence = sentence[:start] + start_buffer + \
                 sentence[start:end] + end_buffer + sentence[end:]
-        # Make multi word genes and diseases one token
+        # Tokenize the sentence
         words = nltk.word_tokenize(sentence)
-        # for entity in genes_diseases:
-        #     if len(entity.split(" ")) > 1:
-        #         split = entity.split(" ")
-        #         first_word = split[0]
-        #         try:
-        #             ind = words.index(first_word)
-        #             joined = " ".join(words[ind:ind + len(split)])
-        #             words[ind:ind + len(split)] = [joined]
-        #         except:
-        #             pass
-        # print words
 
         for gene_dis_pair, label in entry["labels"].items():
             gene = gene_dis_pair[0]
+            # Length of the gene entity
             gene_length = len(gene.split(" "))
             disease = gene_dis_pair[1]
+            # Length of the disease entity
             disease_length = len(disease.split(" "))
             try:
                 first_word = gene.split(" ")[0]
                 gene_ind = words.index(first_word)
             except:
-                continued += 1
+                skipped += 1
                 continue
             try:
                 first_word = disease.split(" ")[0]
                 disease_ind = words.index(first_word)
             except:
-                continued += 1
+                skipped += 1
                 continue
 
             # Depedency Parse Features
@@ -146,20 +134,22 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
 
             for i in range(0, min(maxSentenceLen, len(words))):
                 # wordEmbeddingIDs[i] = model.wv[words[i]]
+                # If a gene is two words long, the distance array will look
+                # something like [..., -2, -1, 0, 0, 1, 2,...]
                 if i < gene_ind:
                     geneDistance = i - gene_ind
                 elif gene_ind <= i < gene_ind + gene_length:
                     geneDistance = 0
                 else:
                     geneDistance = i - (gene_ind + gene_length - 1)
-
+                # Do the same thing for disease.
                 if i < disease_ind:
                     diseaseDistance = i - disease_ind
                 elif disease_ind <= i < disease_ind + disease_length:
                     diseaseDistance = 0
                 else:
                     diseaseDistance = i - (disease_ind + disease_length - 1)
-
+                # Map the distances according to distanceMapping.
                 if geneDistance in distanceMapping:
                     geneDistances[i] = distanceMapping[geneDistance]
                 elif geneDistance <= minDistance:
@@ -177,9 +167,8 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
             diseaseDistanceMatrix.append(diseaseDistances)
             # boolean to int
             labels.append(int(label))
-        # break
     print "NUMBER OF SKIPPED"
-    print continued
+    print skipped
     print "NUMBER SUCCEEDED"
     print len(labels)
 
