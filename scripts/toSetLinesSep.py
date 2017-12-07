@@ -1,6 +1,8 @@
 import sys
 import random
 
+perLine = 10
+
 def main():
 	# Check correct number of arguments
 	if len(sys.argv) < 2:
@@ -21,10 +23,10 @@ def main():
 
 	outLine = ''
 
-	perLine = 10
 	currLine = 0
 	totalCount = 0
 
+	# For each line, group each perLine lines before putting a newline
 	for line in f:
 		if random.randint(0, 9) != 0:
 			continue
@@ -36,7 +38,8 @@ def main():
 		if currLine >= perLine:
 			outLine += '\n'
 			currLine = 0
-
+			
+	# Write the data back out
 	f2.write(outLine)
 
 	print "Total number of entities to detect: " + str(totalCount)

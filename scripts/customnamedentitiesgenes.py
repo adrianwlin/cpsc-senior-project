@@ -8,6 +8,12 @@ import enchant
 import codecs
 from random import shuffle
 
+'''
+Our own custom named-entity recognizer that uses syntax to determine if something is a gene.
+Takes in a file of things with label1 (we use this for a file of genes),
+a file of things with label2 (we use this for a file of non-gene words), and an optional txtFile to analyze.
+Returns the classifier that can be used to classify things as label1 or label2 (gene or notgene).
+'''
 def customNamedEntities(file1name, label1, file2name, label2, txtFileName=None):
 	# File being read
 	f1 = open(file1name, "r")

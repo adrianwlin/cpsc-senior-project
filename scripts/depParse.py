@@ -12,6 +12,11 @@ DEP_DEPTH_CAP = 50
 # Stole this from https://stackoverflow.com/questions/1342000/how-to-make-the-python-interpreter-correctly-handle-non-ascii-characters-in-stri
 def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
 
+'''
+Find the features having to do with the dependency tree.
+Takes two indices for the two words being considered, as well as the text of the words.
+Returns a map of all the different features and their values.
+'''
 def depParse(text, index1, index2, text1, text2):
 	# Check if indices are valid
 	if index1 < 0 or index1 >= len(text.split(' ')) or index2 <= 0 or index2 >= len(text.split(' ')):
@@ -23,16 +28,6 @@ def depParse(text, index1, index2, text1, text2):
 	except:
 		text = text
 	doc = nlp(text) # run spaCy nlp on text
-
-	# def to_nltk_tree(node):
-	# 	if node.n_lefts + node.n_rights > 0:
-	# 		return ParentedTree(node.orth_, [to_nltk_tree(child) for child in node.children])
-	# 	else:
-	# 		return ParentedTree(node.orth_, [])
-
-	# # exSents = nlp(unicode('Because I am hungry, I went to eat and play', errors='ignore')).sents
-	# for sent in doc.sents:
-	# 	print to_nltk_tree(sent.root).pretty_print()
 
 	# Extract the dependency features
 	for token in doc:
@@ -54,12 +49,16 @@ def depParse(text, index1, index2, text1, text2):
 				return ind
 		return -1
 
+	# The given index is not the correct word
+	# Just find the first instance of text1
 	if depFeats[index1] != text1:
 		index1 = findIndex(depFeats, text1)
 		if index1 == -1:
 			# Did not even find the word
 			return None
 
+	# The given index is not the correct word
+	# Just find the first instance of text2
 	if depFeats[index2] != text2:
 		index2 = findIndex(depFeats, text2)
 		if index2 == -1:
@@ -110,6 +109,7 @@ def depParse(text, index1, index2, text1, text2):
 		# print parents
 		return parents
 
+	# Find the lists of parents of both words
 	oneParents = parents(index1)
 	twoParents = parents(index2)
 
@@ -117,7 +117,10 @@ def depParse(text, index1, index2, text1, text2):
 	if oneParents == None or twoParents == None:
 		return None
 
+	# Initialize output
 	output = {}
+
+	# Put the information from each individual word in output
 	output['dependencyTagOne'] = depFeats[index1]['dep']
 	output['dependencyTagTwo'] = depFeats[index2]['dep']
 	output['distance'] = abs(index1 - index2)
