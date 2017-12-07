@@ -30,7 +30,9 @@ for dis in range(minDistance, maxDistance + 1):
     # {-30: 3, -29: 4, ...etc }
     distanceMapping[dis] = len(distanceMapping)
 
-
+'''
+Create np.array objects for each set of features we want to use in the CNN
+'''
 def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
     """Creates matrices for the events and sentence for the given file"""
     # Lists for each feature
@@ -167,11 +169,17 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
             diseaseDistanceMatrix.append(diseaseDistances)
             # boolean to int
             labels.append(int(label))
+
+    # Print how many sentences we had to skip because feature extraction failed
     print "NUMBER OF SKIPPED"
     print skipped
     print "NUMBER SUCCEEDED"
     print len(labels)
 
+    # For each (gene, disease) pair, returns the label, word embedding, distance from the gene, distance from the disease,
+    # distance between gene and disease, dependency-tree-distance between gene and disease,
+    # the dependency tag of each of the gene, disease, and the lowest common subsumer, and the
+    # part of speech and text of the lowest common subsumer.
     return np.array(labels, dtype='int32'), np.array(wordEmbedMatrix, dtype='int32'), \
         np.array(geneDistanceMatrix, dtype='int32'), np.array(
             diseaseDistanceMatrix, dtype='int32'), np.array(wordDistanceList), \
@@ -191,45 +199,7 @@ print "Max Sentence Length: ", maxSentenceLen
 # :: Read in word embeddings ::
 word2Idx = {}
 embeddings = []
-#
-# for line in open(embeddingsPath):
-#     split = line.strip().split(" ")
-#     word = split[0]
-#
-#     if len(word2Idx) == 0:  # Add padding+unknown
-#         word2Idx["PADDING"] = len(word2Idx)
-#         vector = np.zeros(len(split) - 1)  # Zero vector vor 'PADDING' word
-#         embeddings.append(vector)
-#
-#         word2Idx["UNKNOWN"] = len(word2Idx)
-#         vector = np.random.uniform(-0.25, 0.25, len(split) - 1)
-#         embeddings.append(vector)
-#
-#     if split[0].lower() in words:
-#         vector = np.array([float(num) for num in split[1:]])
-#         embeddings.append(vector)
-#         word2Idx[split[0]] = len(word2Idx)
-#
-# embeddings = np.array(embeddings)
-#
-# print "Embeddings shape: ", embeddings.shape
-# print "Len words: ", len(words)
-#
-# f = open(embeddingsPklPath, 'wb')
-# pickle.dump(embeddings, f, -1)
-# f.close()
 
 print len(labeled)
 # :: Create token matrix ::
 train_set = createMatrices(labeled, word2Idx, maxSentenceLen)
-# test_set = createMatrices(labeled, word2Idx, maxSentenceLen)
-#
-# f = open(outputFilePath, 'wb')
-# pickle.dump(train_set, f, -1)
-# pickle.dump(test_set, f, -1)
-# f.close()
-
-# print "Data written to pickle file"
-#
-# for label, freq in labelsDistribution.most_common(100):
-#     print "%s : %f%%" % (label, 100 * freq / float(labelsDistribution.N()))
