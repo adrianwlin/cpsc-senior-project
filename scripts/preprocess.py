@@ -14,12 +14,14 @@ from depParse import depParse
 
 print "Load dataset"
 root_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-with open(os.path.join(root_folder, "data/round1/labeled.p"), "r") as f:
+with open(os.path.join(root_folder, "data/round2/labeled.p"), "r") as f:
     labeled = pickle.load(f)
+split_ind = int(len(labeled) * 0.8)
+print "Train size: {}, Test size: {}".format(split_ind, len(labeled) - split_ind)
+train_labled = labeled[:split_ind]
+test_labeled = labeled[split_ind:]
 
-all_words = {}
 maxSentenceLen = 0
-labelsDistribution = FreqDist()
 
 # This dict maps each distance value in range [-30, 30] on to a positive value.
 # The values 0, 1, 2 are reserved for special cases such has padding or out of bounds.
@@ -30,11 +32,11 @@ for dis in range(minDistance, maxDistance + 1):
     # {-30: 3, -29: 4, ...etc }
     distanceMapping[dis] = len(distanceMapping)
 
-'''
-Create np.array objects for each set of features we want to use in the CNN
-'''
-def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
-    """Creates matrices for the events and sentence for the given file"""
+
+def createMatrices(labeled_list, maxSentenceLen=100):
+    '''
+    Create np.array objects for each set of features we want to use in the CNN
+    '''
     # Lists for each feature
     labels = []
     geneDistanceMatrix = []
@@ -191,15 +193,11 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
 for entry in labeled:
     tokens = entry["line"].split(" ")
     maxSentenceLen = max(maxSentenceLen, len(tokens))
-    for token in tokens:
-        all_words[token.lower()] = True
-
 print "Max Sentence Length: ", maxSentenceLen
 
-# :: Read in word embeddings ::
-word2Idx = {}
-embeddings = []
-
-print len(labeled)
-# :: Create token matrix ::
-train_set = createMatrices(labeled, word2Idx, maxSentenceLen)
+# :: Create token matrices ::
+train_set = createMatrices(train_labled, maxSentenceLen)
+test_set = createMatrices(test_labeled, maxSentenceLen)
+with open(outputFilePath, 'wb') as:
+    pickle.dump(train_set, f, -1)
+    pickle.dump(test_set, f, -1)
