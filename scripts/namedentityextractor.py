@@ -4,6 +4,9 @@ import nltk, re, pprint
 from nltk import word_tokenize, pos_tag, ne_chunk
 from nltk.tree import Tree
 
+'''
+Our own named-entity extractor which uses nltk directly to determine if it is an entity.
+'''
 def extractNamedEntities(filename):
 	# File being read
 	f = open(filename, "r")
@@ -39,6 +42,9 @@ def extractNamedEntities(filename):
 	f.close()
 	return fullList
 
+'''
+Simple starter function for finding genes by syntax
+'''
 def findGenes(words):
 	genes = []
 	gene_regex = re.compile("^[0-9A-Z]*[A-Z]+[0-9A-Z]*$")

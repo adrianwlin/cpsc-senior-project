@@ -19,14 +19,20 @@ becas.tool = '490-gene-disease-relationship-finder'
 
 BATCH_SIZE = 1000
 
-
+'''
+Remove any non-ascii characters from a string.
+'''
 def removeNonAscii(s):
     """
     https://stackoverflow.com/questions/1342000/how-to-make-the-python-interpreter-correctly-handle-non-ascii-characters-in-stri
     """
     return "".join(i for i in s if ord(i) < 128)
 
-
+'''
+Creates an entry that will be used in the disease map (see becasNER)
+from the string format in the file (separated by '|').
+Takes the disease information and the sentence and returns the map.
+'''
 def createDiseaseEntry(diso, sent):
     token = diso.split('|')[0]
     dis = {}
@@ -47,7 +53,10 @@ def createDiseaseEntry(diso, sent):
                 break
     return dis
 
-
+'''
+Perform Named-Entity Recognition Using becas
+Takes in a file to perform the recognition on, a line to start on, and
+'''
 def becasNER(txtFileName, start_line=0, geneFileName=None, notGeneFileName=None):
     """
     Runs becas NER for genes and diseases on each sentence. Writes to a new pickle
@@ -56,38 +65,17 @@ def becasNER(txtFileName, start_line=0, geneFileName=None, notGeneFileName=None)
     d = enchant.Dict("en_US")  # English Dictionary
     output = []
     fullOutput = []
+
     # Test named entity extractor on a file
     if txtFileName != None:
         # Open text file
         f = open(txtFileName, "r")
 
-        # Output format
-        # [{
-        # 	line: string, # Full sentence
-        # 	genes: [{
-        # 				index: int, # Index into sentence
-        # 				lengthInChars: int, # Length of gene name
-        # 				lengthInWords: int, # Length of gene name
-        # 				name: string, # Full gene name
-        # 				uniprot: string # UNIPROT code of gene
-        # 			}],
-        # 	diseases: [{
-        # 				index: int, # Index into sentence
-        # 				lengthInChars: int, # Length of disease name
-        # 				lengthInWords: int, # Length of disease name
-        # 				name: string, # Full disease name
-        # 				cui: string # Disease Concept Unique Identifier
-        # 			}]
-        # }, {
-        # 	...
-        # }
-        # ...]
-
         files_written = start_line / BATCH_SIZE
         sentences_processed = 0
         # For each line, classify and print result
         lines = f.readlines()
-        # numbeer of lines from the file that have been read
+        # Number of lines from the file that have been read
         lines_read = 0
         lines_to_read = len(lines) - start_line
         for line in lines[start_line:]:
@@ -157,6 +145,7 @@ def becasNER(txtFileName, start_line=0, geneFileName=None, notGeneFileName=None)
                 output.append(data)
                 fullOutput.append(data)
 
+                # Perform processes one batch at a time
                 sentences_processed += 1
                 if sentences_processed % BATCH_SIZE == 0 and sentences_processed > 0:
                     dirname = os.path.dirname(txtFileName)
@@ -177,6 +166,29 @@ def becasNER(txtFileName, start_line=0, geneFileName=None, notGeneFileName=None)
             if lines_read % 10 == 0:
                 print "{}/{} lines read".format(lines_read, lines_to_read)
 
+    '''
+    Output format:
+    [{
+    	line: string, # Full sentence
+    	genes: [{
+    				index: int, # Index into sentence
+    				lengthInChars: int, # Length of gene name
+    				lengthInWords: int, # Length of gene name
+    				name: string, # Full gene name
+    				uniprot: string # UNIPROT code of gene
+    			}],
+    	diseases: [{
+    				index: int, # Index into sentence
+    				lengthInChars: int, # Length of disease name
+    				lengthInWords: int, # Length of disease name
+    				name: string, # Full disease name
+    				cui: string # Disease Concept Unique Identifier
+    			}]
+    }, {
+    	...
+    }
+    ...]
+    '''
     return fullOutput
 
 def main():

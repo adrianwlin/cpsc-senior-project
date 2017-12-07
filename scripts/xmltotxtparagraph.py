@@ -1,6 +1,10 @@
 import sys
 import xml.etree.ElementTree as ET
 
+'''
+Take in a line and extract all non-tag text between paragraph tags.
+Write this back out to a file.
+'''
 def writeParagraphsToFile(line, out):
 	# If it could not have paragraph opening and closing tags, quit
 	if len(line) < 7:
