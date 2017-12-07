@@ -32,7 +32,9 @@ def label_data(pickle_file, outfile, connection):
         good = 0
         positive = 0
         negative = 0
-        for entry in labeled_list:
+        for i, entry in enumerate(labeled_list):
+            if i % 1000 == 0:
+                print "processed {} entries".format(i)
             if len(entry["genes"]) == 0 or len(entry["diseases"]) == 0:
                 no_good += 1
             else:

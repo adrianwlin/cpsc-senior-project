@@ -9,6 +9,10 @@ import pickle
 import nltk
 from nltk.probability import FreqDist
 from gensim.models import Word2Vec
+# import spacy
+# from spacy.tokenizer import Tokenizer
+# nlp = spacy.load('en')
+# tokenizer = Tokenizer(nlp.vocab)
 
 from depParse import depParse
 
@@ -67,7 +71,7 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
             genes_diseases.append(gene["name"])
         for dis in entry["diseases"]:
             genes_diseases.append(dis["name"])
-        # Put spaces before and after the entity in case.
+        # Put spaces before and after the entity for cases like "A B-word" where "A B" is one entity.
         for entity in genes_diseases:
             start = sentence.find(entity)
             end = start + len(entity)
