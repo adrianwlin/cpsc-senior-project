@@ -32,11 +32,21 @@ for dis in range(minDistance, maxDistance + 1):
 
 def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
     """Creates matrices for the events and sentence for the given file"""
+    # Lists for each feature
     labels = []
     geneDistanceMatrix = []
     diseaseDistanceMatrix = []
     wordEmbedMatrix = []
     continued = 0
+
+    # Lists for each feature from depParse (Dependency Tree)
+    wordDistanceList = []
+    treeDistanceList = []
+    tagOneList = []
+    tagTwoList = []
+    tagLCSList = []
+    posLCSList = []
+    textLCSList = []
 
     '''
     Train a Word2Vec Model
@@ -55,10 +65,6 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
     sentences = MySentences(os.path.join(os.path.dirname(os.path.dirname(
         os.path.realpath(__file__))), 'util/word2vectraining'))  # a memory-friendly iterator
     model = Word2Vec(sentences)
-
-    # Test case for the above
-    # print("EMBED OF BREAST IS: ")
-    # print(model.wv["breast"])
 
     for entry in labeled_list:
         sentence = entry["line"]
@@ -107,22 +113,24 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
                 continued += 1
                 continue
 
-            # print "HERE IS SOME STUFF"
-            # print "WORDS"
-            # print words
-            # print "GENE"
-            # print gene
-            # print "DISEASE"
-            # print disease
-            # print "GENEIND"
-            # print gene_ind
-            # print "DISEASEIND"
-            # print disease_ind
-
-            dp = depParse(" ".join(words), gene_ind, disease_ind)
+            # Depedency Parse Features
+            dp = depParse(" ".join(words), gene_ind, disease_ind, gene, disease)
             if dp == None:
-                continued += 1
-                continue
+                wordDistanceList.append(None)
+                treeDistanceList.append(None)
+                tagOneList.append(None)
+                tagTwoList.append(None)
+                tagLCSList.append(None)
+                posLCSList.append(None)
+                textLCSList.append(None)
+            else:
+                wordDistanceList.append(dp['distance'])
+                treeDistanceList.append(dp['treeDistance'])
+                tagOneList.append(dp['dependencyTagOne'])
+                tagTwoList.append(dp['dependencyTagTwo'])
+                tagLCSList.append(dp['dependencyTagLCS'])
+                posLCSList.append(dp['posLCS'])
+                textLCSList.append(dp['textLCS'])
 
             wordEmbeddingIDs = np.zeros(maxSentenceLen)
             geneDistances = np.zeros(maxSentenceLen)
@@ -159,7 +167,10 @@ def createMatrices(labeled_list, word2Idx, maxSentenceLen=100):
 
     return np.array(labels, dtype='int32'), np.array(wordEmbedMatrix, dtype='int32'), \
         np.array(geneDistanceMatrix, dtype='int32'), np.array(
-            diseaseDistanceMatrix, dtype='int32'),
+            diseaseDistanceMatrix, dtype='int32'), np.array(wordDistanceList), \
+        np.array(treeDistanceList), np.array(tagOneList), \
+        np.array(tagTwoList), np.array(tagLCSList), \
+        np.array(posLCSList), np.array(textLCSList), 
 
 
 for entry in labeled:
