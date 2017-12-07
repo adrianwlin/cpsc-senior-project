@@ -1,8 +1,11 @@
+{% extends "layout.html" %}
+
 {% block body %}
 <form action = "http://localhost:5000/uploader" method = "POST" 
-	enctype = "multipart/form-data">
-	<input type = "file" name = "file" />
-	<input type = "url" name = "file-url" />
+	enctype = "multipart/form-data" class="file-form">
+	Load file: <input type = "file" name = "file" />
+	OR
+	Give file url: <input type = "url" name = "file-url" />
 	<input type = "submit"/>
 </form>
 {% endblock %}
