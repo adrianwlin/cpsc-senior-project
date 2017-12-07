@@ -198,6 +198,6 @@ print "Max Sentence Length: ", maxSentenceLen
 # :: Create token matrices ::
 train_set = createMatrices(train_labled, maxSentenceLen)
 test_set = createMatrices(test_labeled, maxSentenceLen)
-with open(outputFilePath, 'wb') as:
+with open(os.path.join(root_folder, "data/round2/preprocessed.p"), "wb") as f:
     pickle.dump(train_set, f, -1)
     pickle.dump(test_set, f, -1)
