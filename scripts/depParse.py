@@ -7,6 +7,8 @@ from nltk.corpus import names
 import spacy
 nlp = spacy.load('en')
 
+DEP_DEPTH_CAP = 50
+
 # Stole this from https://stackoverflow.com/questions/1342000/how-to-make-the-python-interpreter-correctly-handle-non-ascii-characters-in-stri
 def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
 
@@ -16,8 +18,21 @@ def depParse(text, index1, index2):
 		return None
 
 	depFeats = [] # Dependency features
-	text = unicode(text, errors='ignore') # Make sure text is unicode
+	try:
+		text = unicode(text, errors='ignore') # Make sure text is unicode
+	except:
+		text = text
 	doc = nlp(text) # run spaCy nlp on text
+
+	# def to_nltk_tree(node):
+	# 	if node.n_lefts + node.n_rights > 0:
+	# 		return ParentedTree(node.orth_, [to_nltk_tree(child) for child in node.children])
+	# 	else:
+	# 		return ParentedTree(node.orth_, [])
+
+	# # exSents = nlp(unicode('Because I am hungry, I went to eat and play', errors='ignore')).sents
+	# for sent in doc.sents:
+	# 	print to_nltk_tree(sent.root).pretty_print()
 
 	# Extract the dependency features
 	for token in doc:
@@ -42,12 +57,24 @@ def depParse(text, index1, index2):
 
 		parents = [] # Output all the ancestors
 
+		loopcount = 0
 		while dep != 'ROOT':
+			# Put a finite loop count because for some reason
+			# There can be loops of parents 4+ items long?
+			if loopcount == DEP_DEPTH_CAP:
+				# Probably an infinite loop
+				# Who rights a sentence with a dependency tree of depth more than 50?
+				return None
+
+			loopcount += 1
+
 			# print  "DEPS ARE:"
 			# print dep
 			foundParent = None
 			for item in depFeats:
-				if item['text'] == head and item['pos'] == headpos and text in item['children']:
+				if item['text'] == head and item['pos'] == headpos and (text in item['children'] or text == head):
+					if text == head and dep != 'ROOT':
+						return None
 					# Found the parent
 					parents.append(item)
 					foundParent = item
@@ -64,6 +91,10 @@ def depParse(text, index1, index2):
 
 	oneParents = parents(index1)
 	twoParents = parents(index2)
+
+	# Error finding parents (likely due to bad parse of sentence)
+	if oneParents == None or twoParents == None:
+		return None
 
 	output = {}
 	output['dependencyTagOne'] = depFeats[index1]['dep']
@@ -88,7 +119,11 @@ def depParse(text, index1, index2):
 			output['treeDistance'] = len(oneParents) + len(twoParents) - (2 * i) + 2
 
 			# LCS is the last same parent
-			LCS = oneParents[len(oneParents - i)]
+			try:
+				LCS = oneParents[len(oneParents) - i]
+			except:
+				# Error finding parents, possibly because two roots for some reason
+				return None
 			break
 
 	# All of oneParents are in twoParents
@@ -98,20 +133,12 @@ def depParse(text, index1, index2):
 		LCS = oneParents[0]
 
 	# Fill in LCS-related output values
-	output['dependencyTagLCS'] = LCS['dep']
-	output['posLCS'] = LCS['pos']
-	output['textLCS'] = LCS['text']
-
-	def to_nltk_tree(node):
-		if node.n_lefts + node.n_rights > 0:
-			return ParentedTree(node.orth_, [to_nltk_tree(child) for child in node.children])
-		else:
-			return node.orth_
-
-	# exSents = nlp(unicode('Because I am hungry, I went to eat and play', errors='ignore')).sents
-	for sent in doc.sents:
-		t = to_nltk_tree(sent.root)
-		print t.pretty_print()
+	try:
+		output['dependencyTagLCS'] = LCS['dep']
+		output['posLCS'] = LCS['pos']
+		output['textLCS'] = LCS['text']
+	except:
+		return None
 			
 	'''
 	Output format:
@@ -124,6 +151,9 @@ def depParse(text, index1, index2):
 		'posLCS': unicode, # part of speech of lowest common subsumer of one and two
 		'textLCS': unicode, # text of lowest common subsumer of one and two
 	}
+
+	If None is returned, there was an issue determining the parents of the nodes
+	This sentence should then be skipped
 	'''
 	# print depFeats
 	return output
