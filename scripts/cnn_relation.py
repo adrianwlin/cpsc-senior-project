@@ -81,7 +81,7 @@ max_pool = GlobalMaxPooling1D()(convolution)
 dropout = Dropout(0.25)(max_pool)
 dense_out = Dense(n_out, activation='softmax')(dropout)
 
-model = Model(inputs=[geneInput, diseaseInput], output=[dense_out])
+model = Model(inputs=[geneInput, diseaseInput], outputs=[dense_out])
 model.compile(loss='categorical_crossentropy',
               optimizer='Adam', metrics=['accuracy'])
 model.summary()
@@ -110,13 +110,15 @@ def getPrecision(pred_test, yTest, targetLabel):
 for epoch in xrange(nb_epoch):
     # model.fit([wordEmbedTrain, geneDistTrain, diseaseDistTrain],
     model.fit([geneDistTrain, diseaseDistTrain],
-              train_y_cat, batch_size=batch_size, verbose=True, nb_epoch=1)
-    pred_test = model.predict_classes(
-        # [wordEmbedTest, geneDistTest, diseaseDistTest], verbose=False)
-        [geneDistTest, diseaseDistTest], verbose=False)
+              train_y_cat, batch_size=batch_size, verbose=True, epochs=1)
+    probs = model.predict(
+        [geneDistTest, diseaseDistTest], verbose=True)
+    pred_test = np.argmax(probs, axis=1)
 
     dctLabels = np.sum(pred_test)
+    print dctLabels
     totalDCTLabels = np.sum(yTest)
+    print totalDCTLabels
 
     acc = np.sum(pred_test == yTest) / float(len(yTest))
     max_acc = max(max_acc, acc)
