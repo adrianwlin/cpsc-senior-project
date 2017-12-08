@@ -12,15 +12,15 @@ import os
 import pickle
 from keras.preprocessing import sequence
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten, concatenate
-from keras.layers.embeddings import Embedding
-from keras.layers import Convolution1D, MaxPooling1D, GlobalMaxPooling1D
+from keras.layers import Dense, Dropout, Embedding, Activation, Flatten, concatenate, Input
+from keras.layers import Conv1D, MaxPooling1D, GlobalMaxPooling1D
+from keras.models import Model
 
 from keras.utils import np_utils
 
 
 batch_size = 64
-nb_filter = 100
+n_filters = 100
 filter_length = 3
 hidden_dims = 100
 nb_epoch = 100
@@ -57,41 +57,31 @@ print "yTest: ", yTest.shape
 #
 # print "Embeddings: ", embeddings.shape
 #
-geneDistModel = Sequential()
-geneDistModel.add(Embedding(max_position, position_dims,
-                            input_length=geneDistTrain.shape[1]))
-# geneDist = Embedding(max_position, position_dims,
-#                      input_length=geneDistTrain.shape[1])
+geneInput = Input(shape=(geneDistTrain.shape[1],))
+geneEmbed = Embedding(input_dim=max_position, output_dim=position_dims,
+                      input_length=geneDistTrain.shape[1])(geneInput)
 
-diseaseDistModel = Sequential()
-diseaseDistModel.add(Embedding(max_position, position_dims,
-                               input_length=diseaseDistTrain.shape[1]))
-# diseaseDist = Embedding(max_position, position_dims,
-#                         input_length=diseaseDistTrain.shape[1])
-#
+diseaseInput = Input(shape=(diseaseDistTrain.shape[1],))
+diseaseEmbed = Embedding(input_dim=max_position, output_dim=position_dims,
+                         input_length=diseaseDistTrain.shape[1])(diseaseInput)
+# TODO: word embeddings
 # wordEmbedModel = Sequential()
 # wordEmbedModel.add(Embedding(embeddings.shape[0], embeddings.shape[1],
 #                              input_length=sentenceTrain.shape[1], weights=[embeddings], trainable=False))
-# model = Sequential()
-# model.add(Merge([wordEmbedModel, geneDistModel,
-#                  diseaseDistModel], mode='concat'))
-model = Sequential()
-concated = concatenate([geneDistModel, diseaseDistModel])
-model.add(concated)
-#
-#
-model.add(Convolution1D(nb_filter=nb_filter,
-                        filter_length=filter_length,
-                        border_mode='same',
-                        activation='tanh',
-                        subsample_length=1))
+
+mergedEmbed = concatenate([geneEmbed, diseaseEmbed])
+
+convolution = Conv1D(filters=n_filters,
+                     kernel_size=filter_length,
+                     padding='same',
+                     activation='tanh')(mergedEmbed)
 # we use standard max over time pooling
-model.add(GlobalMaxPooling1D())
+max_pool = GlobalMaxPooling1D()(convolution)
 #
-model.add(Dropout(0.25))
-model.add(Dense(n_out, activation='softmax'))
-#
-#
+dropout = Dropout(0.25)(max_pool)
+dense_out = Dense(n_out, activation='softmax')(dropout)
+
+model = Model(inputs=[geneInput, diseaseInput], output=[dense_out])
 model.compile(loss='categorical_crossentropy',
               optimizer='Adam', metrics=['accuracy'])
 model.summary()
