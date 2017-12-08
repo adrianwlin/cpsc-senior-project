@@ -3,6 +3,8 @@ from werkzeug import secure_filename
 import subprocess
 import urllib2
 from bs4 import BeautifulSoup
+from scripts.becasgenesdiseases import becasNER, printCounts
+from scripts.preprocess import createMatrices
 
 app = Flask(__name__)
 
@@ -17,12 +19,14 @@ def upload_file():
 
       s = 'Found entities:\n\n'
 
+      print "FIRST REACHED THIS"
+
       if f == None or not f:
         furl = request.form['file-url']
         if furl == '' or furl == None or not furl:
           return 'No File Found!'
 
-        page = urllib2.urlopen('http://yahoo.com').read()
+        page = urllib2.urlopen(furl).read()
         soup = BeautifulSoup(page)
         soup.prettify()
         for pars in soup.findAll('p'):
@@ -30,9 +34,16 @@ def upload_file():
             s += par.get_text()
             return s
 
-      # tempname = 'temp/' + secure_filename(f.filename)
-      # f.save(tempname)
+      print "THEN REACHED THIS"
+
+      tempname = 'temp/' + secure_filename(f.filename)
+      f.save(tempname)
       # subprocess.call(["python", "scripts/becasgenesdiseases.py", tempname])
+      entityList = becasNER(tempname)
+      printCounts(entityList)
+      # createMatrices(entityList) # This has an error. WIll put back after
+
+      print "NEXT REACHED THIS"
 
       s = ""
       for line in f:
