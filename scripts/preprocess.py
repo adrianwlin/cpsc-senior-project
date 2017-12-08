@@ -12,27 +12,6 @@ from gensim.models import Word2Vec
 from depParse import depParse
 
 
-print "Load dataset"
-root_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-with open(os.path.join(root_folder, "data/round2/labeled.p"), "r") as f:
-    labeled = pickle.load(f)
-split_ind = int(len(labeled) * 0.8)
-print "Train size: {}, Test size: {}".format(split_ind, len(labeled) - split_ind)
-train_labled = labeled[:split_ind]
-test_labeled = labeled[split_ind:]
-
-maxSentenceLen = 0
-
-# This dict maps each distance value in range [-30, 30] on to a positive value.
-# The values 0, 1, 2 are reserved for special cases such has padding or out of bounds.
-distanceMapping = {'PADDING': 0, 'LowerMin': 1, 'GreaterMax': 2}
-minDistance = -30
-maxDistance = 30
-for dis in range(minDistance, maxDistance + 1):
-    # {-30: 3, -29: 4, ...etc }
-    distanceMapping[dis] = len(distanceMapping)
-
-
 def createMatrices(labeled_list, maxSentenceLen=100):
     '''
     Create np.array objects for each set of features we want to use in the CNN
@@ -189,15 +168,39 @@ def createMatrices(labeled_list, maxSentenceLen=100):
         np.array(tagTwoList), np.array(tagLCSList), \
         np.array(posLCSList), np.array(textLCSList),
 
+def main():
+    print "Load dataset"
+    root_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    with open(os.path.join(root_folder, "data/round2/labeled.p"), "r") as f:
+        labeled = pickle.load(f)
+    split_ind = int(len(labeled) * 0.8)
+    print "Train size: {}, Test size: {}".format(split_ind, len(labeled) - split_ind)
+    train_labled = labeled[:split_ind]
+    test_labeled = labeled[split_ind:]
 
-for entry in labeled:
-    tokens = entry["line"].split(" ")
-    maxSentenceLen = max(maxSentenceLen, len(tokens))
-print "Max Sentence Length: ", maxSentenceLen
+    maxSentenceLen = 0
 
-# :: Create token matrices ::
-train_set = createMatrices(train_labled, maxSentenceLen)
-test_set = createMatrices(test_labeled, maxSentenceLen)
-with open(os.path.join(root_folder, "data/round2/preprocessed.p"), "wb") as f:
-    pickle.dump(train_set, f, -1)
-    pickle.dump(test_set, f, -1)
+    # This dict maps each distance value in range [-30, 30] on to a positive value.
+    # The values 0, 1, 2 are reserved for special cases such has padding or out of bounds.
+    distanceMapping = {'PADDING': 0, 'LowerMin': 1, 'GreaterMax': 2}
+    minDistance = -30
+    maxDistance = 30
+    for dis in range(minDistance, maxDistance + 1):
+        # {-30: 3, -29: 4, ...etc }
+        distanceMapping[dis] = len(distanceMapping)
+
+
+    for entry in labeled:
+        tokens = entry["line"].split(" ")
+        maxSentenceLen = max(maxSentenceLen, len(tokens))
+    print "Max Sentence Length: ", maxSentenceLen
+
+    # :: Create token matrices ::
+    train_set = createMatrices(train_labled, maxSentenceLen)
+    test_set = createMatrices(test_labeled, maxSentenceLen)
+    with open(os.path.join(root_folder, "data/round2/preprocessed.p"), "wb") as f:
+        pickle.dump(train_set, f, -1)
+        pickle.dump(test_set, f, -1)
+
+if __name__ == "__main__":
+    main()

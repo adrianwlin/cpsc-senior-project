@@ -191,6 +191,41 @@ def becasNER(txtFileName, start_line=0, geneFileName=None, notGeneFileName=None)
     '''
     return fullOutput
 
+def printCounts(entityList):
+    '''
+	The following is all test code to determine accuracy.
+	It should only be run on files consisting *only* of gene and disease names.
+	'''
+    geneCount = 0
+    diseaseCount = 0
+    wrongGenesCount = 0
+    wrongDiseasesCount = 0
+
+    for line in entityList:
+        geneCount += len(line['genes'])
+
+        for gene in line['genes']:
+            if len(gene['name'].split(' is an entity. ')) > 1:
+                print 'found wrong gene: ' + gene['name']
+                wrongGenesCount += 1
+
+        diseaseCount += len(line['diseases'])
+
+        for disease in line['diseases']:
+            if len(disease['name'].split(' is an entity. ')) > 1:
+                print 'found wrong disease: ' + disease['name']
+                wrongDiseasesCount += 1
+
+    print 'Total genes found is:'
+    print geneCount
+    print 'Total disease found is:'
+    print diseaseCount
+    print 'Also found this many wrong genes:'
+    print wrongGenesCount
+    print 'Also found this many wrong diseases:'
+    print wrongDiseasesCount
+
+
 def main():
     # Check correct number of arguments
     if len(sys.argv) < 2:
@@ -256,38 +291,7 @@ def main():
     genesFoundFile.close()
     diseasesFoundFile.close()
 
-    '''
-	The following is all test code to determine accuracy.
-	It should only be run on files consisting *only* of gene and disease names.
-	'''
-    geneCount = 0
-    diseaseCount = 0
-    wrongGenesCount = 0
-    wrongDiseasesCount = 0
-
-    for line in entityList:
-        geneCount += len(line['genes'])
-
-        for gene in line['genes']:
-            if len(gene['name'].split(' is an entity. ')) > 1:
-                print 'found wrong gene: ' + gene['name']
-                wrongGenesCount += 1
-
-        diseaseCount += len(line['diseases'])
-
-        for disease in line['diseases']:
-            if len(disease['name'].split(' is an entity. ')) > 1:
-                print 'found wrong disease: ' + disease['name']
-                wrongDiseasesCount += 1
-
-    print 'Total genes found is:'
-    print geneCount
-    print 'Total disease found is:'
-    print diseaseCount
-    print 'Also found this many wrong genes:'
-    print wrongGenesCount
-    print 'Also found this many wrong diseases:'
-    print wrongDiseasesCount
+    printCounts(entityList)
 
     return 0
 
