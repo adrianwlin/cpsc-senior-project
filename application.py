@@ -44,7 +44,7 @@ def upload_file():
         entityList = becasNER(tempname)
         printCounts(entityList)
         preprocessor = Preprocessor()
-        # preprocessor.createFeatures(entityList) # This has an error. WIll put back after
+        preprocessor.createFeatures(entityList)
 
         print "NEXT REACHED THIS"
 
