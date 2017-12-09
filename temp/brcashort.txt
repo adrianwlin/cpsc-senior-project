@@ -1,0 +1,6 @@
+BRCA1 and BRCA2 genes
+Most inherited cases of breast cancer are associated with two abnormal genes: BRCA1 (BReast CAncer gene one) and BRCA2 (BReast CAncer gene two).
+
+Having an abnormal BRCA1 or BRCA2 gene doesn't mean you will be diagnosed with breast cancer. Researchers are learning that other mutations in pieces of chromosomes -- called SNPs (single nucleotide polymorphisms) -- may be linked to higher breast cancer risk in women with an abnormal BRCA1 gene as well as women who didn't inherit an abnormal breast cancer gene.
+
+The PTEN gene helps regulate cell growth. An abnormal PTEN gene causes Cowden syndrome, a rare disorder in which people have a higher risk of both benign (not cancer) and cancerous breast tumors, as well as growths in the digestive tract, thyroid, uterus, and ovaries. The lifetime breast cancer risk for women with a PTEN mutation is up to 85%.
