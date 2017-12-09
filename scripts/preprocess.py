@@ -98,6 +98,21 @@ class Preprocessor:
                 diseaseDistances[i] = self.distanceMapping['GreaterMax']
         return geneDistances, diseaseDistances
 
+    def getTokenIndex(self, raw_sentence, raw_index, tokens):
+        '''
+        tokens is a tokenized version of raw_sentence.
+        This function finds the token index corresponding to the raw_index in to the
+        string raw_sentence.
+        Returns -1 if it cannot be found.
+        '''
+        offset = 0
+        for i, token in enumerate(tokens):
+            offset = raw_sentence.find(token, offset)
+            if offset <= raw_index < offset + len(token):
+                return i
+            offset += len(token)
+        return -1
+
     def createTrainingFeatures(self, labeled_list,  maxSentenceLen=100):
         '''
         Create np.array objects for each set of features we want to use in the CNN
@@ -108,6 +123,7 @@ class Preprocessor:
         diseaseDistanceMatrix = []
         wordEmbedMatrix = []
         skipped = 0
+        succeeded = 0
 
         # Lists for each feature from depParse (Dependency Tree)
         wordDistanceList = []
@@ -118,28 +134,36 @@ class Preprocessor:
         posLCSList = []
         textLCSList = []
 
-        for entry in labeled_list:
+        for i, entry in enumerate(labeled_list):
+            if i % 500 == 0 and i > 0:
+                print "{} sentences processed, {} pairs labeled".format(i, succeeded)
+            raw_sentence = entry["line"]
             sentence = self.entitySpacePadding(entry)
             # Tokenize the sentence
             words = nltk.word_tokenize(sentence)
 
             for gene_dis_pair, label in entry["labels"].items():
                 gene = gene_dis_pair[0]
-                # Length of the gene entity
-                gene_length = len(gene.split(" "))
-                disease = gene_dis_pair[1]
-                # Length of the disease entity
-                disease_length = len(disease.split(" "))
-                try:
-                    first_word = gene.split(" ")[0]
-                    gene_ind = words.index(first_word)
-                except:
+                for g in entry["genes"]:
+                    if g["name"] == gene:
+                        gene_entry = g
+                gene_length = gene_entry["lengthInWords"]
+                # Get the token index of the first word of the gene
+                gene_ind = self.getTokenIndex(
+                    raw_sentence, gene_entry["index"], words)
+                if gene_ind < 0:
                     skipped += 1
                     continue
-                try:
-                    first_word = disease.split(" ")[0]
-                    disease_ind = words.index(first_word)
-                except:
+
+                disease = gene_dis_pair[1]
+                for d in entry["diseases"]:
+                    if d["name"] == disease:
+                        disease_entry = d
+                disease_length = disease_entry["lengthInWords"]
+                # Get the token index of the first word of the disease
+                disease_ind = self.getTokenIndex(
+                    raw_sentence, disease_entry["index"], words)
+                if disease_ind < 0:
                     skipped += 1
                     continue
 
@@ -170,6 +194,7 @@ class Preprocessor:
                 geneDistances, diseaseDistances = self.getDistances(
                     gene_ind, gene_length, disease_ind, disease_length,
                     maxSentenceLen, len(words))
+                succeeded += 1
                 wordEmbedMatrix.append(wordEmbeddingIDs)
                 geneDistanceMatrix.append(geneDistances)
                 diseaseDistanceMatrix.append(diseaseDistances)
@@ -180,7 +205,7 @@ class Preprocessor:
         print "NUMBER OF SKIPPED"
         print skipped
         print "NUMBER SUCCEEDED"
-        print len(labels)
+        print succeeded
 
         # For each (gene, disease) pair, returns the label, word embedding, distance from the gene, distance from the disease,
         # distance between gene and disease, dependency-tree-distance between gene and disease,
@@ -211,7 +236,10 @@ class Preprocessor:
         posLCSList = []
         textLCSList = []
 
-        for entry in labeled_list:
+        print len(labeled_list), "entries"
+        for i, entry in enumerate(labeled_list):
+            if i % 250 == 0 and i > 0:
+                print "{} sentences processed, {} pairs succeeded".format(i, succeeded)
             totalPairs += len(entry["genes"]) * len(entry["diseases"])
             # If there are no genes or no disease recognized in the sentence skip.
             if len(entry["genes"]) == 0 or len(entry["diseases"]) == 0:
@@ -224,14 +252,8 @@ class Preprocessor:
             for gene_entry in entry["genes"]:
                 gene_name = gene_entry["name"]
                 gene_length = gene_entry["lengthInWords"]
-                gene_ind = -1
-                offset = 0
-                for i, token in enumerate(words):
-                    offset = raw_sentence.find(token, offset)
-                    if offset <= gene_entry["index"] < offset + len(token):
-                        gene_ind = i
-                        break
-                    offset += len(token)
+                gene_ind = self.getTokenIndex(
+                    raw_sentence, gene_entry["index"], words)
                 if gene_ind < 0:
                     skipped += 1
                     continue
@@ -239,16 +261,12 @@ class Preprocessor:
                     disease_name = disease_entry["name"]
                     disease_length = disease_entry["lengthInWords"]
                     offset = 0
-                    gene_ind = -1
-                    for i, token in enumerate(words):
-                        offset = raw_sentence.find(token, offset)
-                        if offset <= disease_entry["index"] < offset + len(token):
-                            disease_ind = i
-                            break
-                        offset += len(token)
+                    disease_ind = self.getTokenIndex(
+                        raw_sentence, disease_entry["index"], words)
                     if disease_ind < 0:
                         skipped += 1
                         continue
+
                     # Depedency Parse Features
                     dp = depParse(" ".join(words), gene_ind,
                                   disease_ind, gene_name, disease_name)
@@ -317,9 +335,9 @@ def main():
 
     # :: Create token matrices ::
     preprocessor = Preprocessor()
-    train_set = preprocessor.createFeatures(
+    train_set = preprocessor.createTrainingFeatures(
         train_labeled, maxSentenceLen)
-    test_set = preprocessor.createFeatures(test_labeled, maxSentenceLen)
+    test_set = preprocessor.createTrainingFeatures(test_labeled, maxSentenceLen)
     with open(os.path.join(root_folder, "data/round2/preprocessed_test.p"), "wb") as f:
         pickle.dump(train_set, f, -1)
         pickle.dump(test_set, f, -1)
