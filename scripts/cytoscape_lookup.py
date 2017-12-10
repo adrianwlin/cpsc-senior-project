@@ -2,6 +2,8 @@ import sqlite3
 import sys
 import pickle
 from sqlite3 import Error
+from copy import deepcopy
+from collections import defaultdict
 
 
 def create_connection(db_file):
@@ -30,9 +32,8 @@ def label_data(pickle_file, outfile, connection):
     with open(pickle_file, "r") as f:
         labeled_list = pickle.load(f)
         # sentences with both genes and disease tags
-        good_sentences = []
-        no_good = 0
-        good = 0
+        labeled_sentences = []
+        missing_entities = 0
         # Number of sentences with a positive label.
         positive = 0
         # Number of sentences with a negative label.
@@ -42,11 +43,10 @@ def label_data(pickle_file, outfile, connection):
                 print "processed {} entries".format(i)
             # If there are no genes or no disease recognized in the sentence skip.
             if len(entry["genes"]) == 0 or len(entry["diseases"]) == 0:
-                no_good += 1
+                missing_entities += 1
                 continue
             else:
-                # All possible pairs of genes and diseases in this sentence.
-                good += len(entry["genes"]) * len(entry["diseases"])
+                entry = defaultdict(dict, entry)
                 for gene in entry["genes"]:
                     uniprot = gene["uniprot"]
                     # if the uniprot ID is blank
@@ -82,22 +82,28 @@ def label_data(pickle_file, outfile, connection):
                         rows = cur.fetchall()
                         # If the association exists, label true
                         if len(rows) == 1:
-                            entry.update(
-                                {"labels": {(gene["name"], disease["name"]): True}})
+                            entry["labels"][(
+                                gene["name"], disease["name"])] = True
                             positive += 1
                         elif not rows:
-                            entry.update(
-                                {"labels": {(gene["name"], disease["name"]): False}})
-                            negative += 1
-                # If some gene/disease pair has been labeled, copy the entry to good_sentences.
+                            # There are a lot more negative examples than
+                            # positive so we limit number of negative examples
+                            # in order to reach a more even distribution
+                            if negative < positive:
+                                entry["labels"][(
+                                    gene["name"], disease["name"])] = False
+                                negative += 1
+                # If some gene/disease pair has been labeled, copy the entry to labeled_sentences.
                 if "labels" in entry:
-                    good_sentences.append(entry.copy())
-        print len(good_sentences), "good sentences"
-        print no_good, good
+                    # print len(entry["labels"])
+                    labeled_sentences.append(entry.copy())
+        print len(labeled_list), "total sentences"
+        print len(labeled_sentences), "labeled sentences"
+        print missing_entities, "sentences missing entities"
         print "positive: {}, negative {}".format(positive, negative)
 
         with open(outfile, 'wb') as f:
-            pickle.dump(good_sentences, f)
+            pickle.dump(labeled_sentences, f)
 
 
 def main():
