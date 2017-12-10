@@ -1,0 +1,17 @@
+ * Serving Flask app "application"
+FIRST REACHED THIS
+THEN REACHED THIS
+Total genes found is:
+10
+Total disease found is:
+11
+Also found this many wrong genes:
+0
+Also found this many wrong diseases:
+0
+7 entries
+NUMBER OF SKIPPED
+0
+NUMBER SUCCEEDED
+15
+NEXT REACHED THIS
