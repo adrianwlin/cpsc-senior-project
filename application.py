@@ -5,6 +5,8 @@ import urllib2
 from bs4 import BeautifulSoup
 from scripts.becasgenesdiseases import becasNER, printCounts
 from scripts.preprocess import Preprocessor
+from StringIO import StringIO
+import sys
 
 app = Flask(__name__)
 
@@ -16,43 +18,62 @@ def index():
 
 @app.route('/uploader', methods=['GET', 'POST'])
 def upload_file():
+    # Reroute stdout to a string to print to screen
+    old_stdout = sys.stdout
+    sys.stdout = mystdout = StringIO()
+
     if request.method == 'POST':
         f = request.files['file']
 
-        s = 'Found entities:\n\n'
+        print 'Found entities:\n\n'
 
-        print "FIRST REACHED THIS"
+        tempname = 'tempfile.txt'
 
+        # Check if using url or file
+        # If both, use file by default
         if f == None or not f:
-            furl = request.form['file-url']
-            if furl == '' or furl == None or not furl:
-                return 'No File Found!'
+          # Get file url and check it
+          furl = request.form['file-url']
+          if furl == '' or furl == None or not furl:
+              return 'No File Found!'
 
-            page = urllib2.urlopen(furl).read()
-            soup = BeautifulSoup(page)
-            soup.prettify()
-            for pars in soup.findAll('p'):
-                for par in pars:
-                    s += par.get_text()
-                    return s
+          # Load up the file url
+          page = urllib2.urlopen(furl).read()
+          soup = BeautifulSoup(page)
+          soup.prettify()
 
-        print "THEN REACHED THIS"
+          # Open a file and write all the paragraph elements to it
+          f2 = open(tempname, w)
+          for pars in soup.findAll('p'):
+              for par in pars:
+                  f2.write(par.get_text())
+          f2.close()
+        else:
+          # Using a file not a file url
+          # Write the file contents to a temp
+          tempname = 'temp/' + secure_filename(f.filename)
+          f.save(tempname)
 
-        tempname = 'temp/' + secure_filename(f.filename)
-        f.save(tempname)
-        # subprocess.call(["python", "scripts/becasgenesdiseases.py", tempname])
+        # Named-entity recognition
         entityList = becasNER(tempname)
+
+        # Sanity check
         printCounts(entityList)
+
+        # Preprocess the data for relationship-extraction
+        # Gets the features to be used by the CNN
         preprocessor = Preprocessor()
-        # preprocessor.createFeatures(entityList) # This has an error. WIll put back after
+        preprocessor.createFeatures(entityList)
 
         print "NEXT REACHED THIS"
 
-        s = ""
-        for line in f:
-            s += line
-            s += '\n'
-        return s
+        # Put back stdout to be safe for next run
+        sys.stdout = old_stdout
+
+        # Check output
+        print mystdout.getvalue()
+
+        return render_template("result.html", comm = mystdout.getvalue())
 
 
 if __name__ == "__main__":
