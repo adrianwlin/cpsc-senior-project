@@ -33,10 +33,11 @@ def depParse(text, index1, index2, text1, text2):
 	for token in doc:
 		depFeats.append({
 			'text': token.text,
-			'pos': token.pos_,
-			'dep': token.dep_,
+			'pos': token.pos,
+			'unhasheddep': token.dep_,
+			'dep': token.dep,
 			'head': token.head.text,
-			'headpos': token.head.pos_,
+			'headpos': token.head.pos,
 			'children': [unicode(child) for child in token.children]
 			});
 
@@ -100,7 +101,7 @@ def depParse(text, index1, index2, text1, text2):
 					foundParent = item
 					break
 
-			dep = foundParent['dep']
+			dep = foundParent['unhasheddep']
 			text = foundParent['text']
 			head = foundParent['head']
 			headpos = foundParent['headpos']
@@ -160,7 +161,6 @@ def depParse(text, index1, index2, text1, text2):
 	try:
 		output['dependencyTagLCS'] = LCS['dep']
 		output['posLCS'] = LCS['pos']
-		output['textLCS'] = LCS['text']
 	except:
 		return None
 			
@@ -173,7 +173,6 @@ def depParse(text, index1, index2, text1, text2):
 		'dependencyTagTwo': unicode, # dependency tag of second word
 		'dependencyTagLCS': unicode, # dependency tag of lowest common subsumer of one and two
 		'posLCS': unicode, # part of speech of lowest common subsumer of one and two
-		'textLCS': unicode, # text of lowest common subsumer of one and two
 	}
 
 	If None is returned, there was an issue determining the parents of the nodes
@@ -183,7 +182,7 @@ def depParse(text, index1, index2, text1, text2):
 	return output
 
 def main():
-	out = depParse('The quick brown fox jumps over the lazy dog.', 1, 7)
+	out = depParse('The quick brown fox jumps over the lazy dog.', 1, 7, 'quick', 'lazy')
 	if out == None:
 		print 'Unable to get dependency parse, or parse empty!'
 	else:
