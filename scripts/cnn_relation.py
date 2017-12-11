@@ -40,7 +40,8 @@ class RelationCNN:
         self.train_y_cat = None
         self.model = None
         self.max_prec, self.max_rec, self.max_acc, self.max_f1 = 0, 0, 0, 0
-
+        self.useEmbed = useEmbed
+        self.useDep = useDep
 
     def loadDataset(self):
         print "Load dataset"
@@ -82,13 +83,35 @@ class RelationCNN:
         diseaseInput = Input(shape=(self.diseaseDistTrain.shape[1],))
         diseaseEmbed = Embedding(input_dim=self.max_position, output_dim=self.position_dims,
                                  input_length=self.diseaseDistTrain.shape[1])(diseaseInput)
-        # TODO: word embeddings
-        # wordEmbedself.Model = Sequential()
-        # wordEmbedself.Model.add(Embedding(embeddings.shape[0], embeddings.shape[1],
-        #                              input_length=sentenceTrain.shape[1], weights=[embeddings], trainable=False))
+
+        wordEmbed = None
+        depEmbed = None
+
+        # Word embeddings
+        # if self.useEmbed or self.wordEmbedTrain == None:
+        #     self.useEmbed = False
+        #     wordEmbedInput = Input(shape=(self.wordEmbedTrain.shape[1],self.wordEmbedTrain.shape[2]))
+        #     wordEmbedEmbed = Embedding(embeddings.shape[0], embeddings.shape[1],
+        #                                  input_length=self.wordEmbedTrain.shape[1], weights=[embeddings], trainable=False)
+        # # Dependency stuff
+        # if self.useDep:
+        #     self.useDep = False
+        #     wordDepInput = Input(shape=(self.geneDistTrain.shape[1],))
+        #     wordDepEmbed = Embedding(embeddings.shape[0], embeddings.shape[1],
+        #                                  input_length=sentenceTrain.shape[1], weights=[embeddings], trainable=False)
+                             
+        # Train depending on whether to use the word embedding and dependency embedding
+        # if wordEmbed == None and depEmbed == None:   
+        #     mergedEmbed = concatenate([geneEmbed, diseaseEmbed])
+        # elif wordEmbed == None:
+        #     mergedEmbed = concatenate([geneEmbed, diseaseEmbed, depEmbed])
+        # elif depEmbed = None:
+        #     mergedEmbed = concatenate([geneEmbed, diseaseEmbed, wordEmbed])
+        # else:
+        #     mergedEmbed = concatenate([geneEmbed, diseaseEmbed, wordEmbed, depEmbed])            
 
         mergedEmbed = concatenate([geneEmbed, diseaseEmbed])
-
+        
         convolution = Conv1D(filters=self.n_filters,
                              kernel_size=self.filter_length,
                              padding='same',

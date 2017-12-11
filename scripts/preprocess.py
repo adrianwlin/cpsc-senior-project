@@ -10,7 +10,7 @@ import nltk
 from nltk.probability import FreqDist
 from gensim.models import Word2Vec
 from depParse import depParse
-
+import string
 
 class MySentences(object):
     def __init__(self, dirname):
@@ -38,6 +38,12 @@ class Preprocessor:
         # Train a Word2Vec Model
         # Code from: https://rare-technologies.com/word2vec-tutorial/
         self.word2vec_model = Word2Vec(sentences)
+
+        # Words that were found in the new text but were not in the training corpus
+        self.newFoundWords = {}
+
+        # Length of a word2vec entry
+        self.w2vlen = 100
 
     def entitySpacePadding(self, entry):
         sentence = entry["line"]
@@ -124,15 +130,10 @@ class Preprocessor:
         wordEmbedMatrix = []
         skipped = 0
         succeeded = 0
+        nodepscount = 0
 
         # Lists for each feature from depParse (Dependency Tree)
-        wordDistanceList = []
-        treeDistanceList = []
-        tagOneList = []
-        tagTwoList = []
-        tagLCSList = []
-        posLCSList = []
-        textLCSList = []
+        depFeaturesList = []
 
         for i, entry in enumerate(labeled_list):
             if i % 500 == 0 and i > 0:
@@ -171,26 +172,48 @@ class Preprocessor:
                 dp = depParse(" ".join(words), gene_ind,
                               disease_ind, gene, disease)
                 if dp == None:
-                    wordDistanceList.append(None)
-                    treeDistanceList.append(None)
-                    tagOneList.append(None)
-                    tagTwoList.append(None)
-                    tagLCSList.append(None)
-                    posLCSList.append(None)
-                    textLCSList.append(None)
+                    # Error in dependency extraction
+                    # Couldn't find intelligent informationa about this
+                    depFeaturesList.append(None)
+                    nodepscount += 1
                 else:
-                    wordDistanceList.append(dp['distance'])
-                    treeDistanceList.append(dp['treeDistance'])
-                    tagOneList.append(dp['dependencyTagOne'])
-                    tagTwoList.append(dp['dependencyTagTwo'])
-                    tagLCSList.append(dp['dependencyTagLCS'])
-                    posLCSList.append(dp['posLCS'])
-                    textLCSList.append(dp['textLCS'])
+                    # Found the dependency features successfully
+                    depFeaturesList.append([dp['distance'], dp['treeDistance'], \
+                        int(dp['dependencyTagOne']), int(dp['dependencyTagTwo']), int(dp['dependencyTagLCS']), \
+                        dp['posLCS']])
 
-                wordEmbeddingIDs = np.zeros(maxSentenceLen)
+                # word embeddings for each word in the sentence
+                wordEmbeddingIDs = np.zeros((maxSentenceLen, self.w2vlen))
+
+                j = 0 # Index into wordEmbeddingsIDs
                 for i in range(0, min(maxSentenceLen, len(words))):
-                    # wordEmbeddingIDs[i] = self.word2vec_model.wv[words[i]]
-                    pass
+                    # Current word
+                    curr = words[i]
+
+                    if curr in self.word2vec_model.wv.vocab:
+                        # Known word
+                        j += 1
+                        try:
+                            wordEmbeddingIDs[j] = self.word2vec_model.wv[curr]
+                        except KeyError:
+                            # Unknown word
+                            if curr not in self.newFoundWords:
+                                # Completely new word
+                                # Parameters based on https://groups.google.com/forum/#!topic/word2vec-toolkit/J3Skqbe3VwQ
+                                self.newFoundWords[curr] = np.random.uniform(-0.25,0.25,self.w2vlen).tolist()
+                            wordEmbeddingIDs[j] = self.newFoundWords[curr]
+                    elif all(char in set(string.punctuation) for char in curr) or len(curr) <= 1:
+                        # Is punctuation
+                        continue
+                    else:
+                        # Unknown word
+                        j += 1
+                        if curr not in self.newFoundWords:
+                            # Completely new word
+                            # Parameters based on https://groups.google.com/forum/#!topic/word2vec-toolkit/J3Skqbe3VwQ
+                            self.newFoundWords[curr] = np.random.uniform(-0.25,0.25,self.w2vlen).tolist()
+                        wordEmbeddingIDs[j] = self.newFoundWords[curr]
+
                 geneDistances, diseaseDistances = self.getDistances(
                     gene_ind, gene_length, disease_ind, disease_length,
                     maxSentenceLen, len(words))
@@ -204,6 +227,8 @@ class Preprocessor:
         # Print how many sentences we had to skip because feature extraction failed
         print "NUMBER OF SKIPPED"
         print skipped
+        print "NUMBER WITHOUT DEP"
+        print nodepscount
         print "NUMBER SUCCEEDED"
         print succeeded
 
@@ -211,12 +236,9 @@ class Preprocessor:
         # distance between gene and disease, dependency-tree-distance between gene and disease,
         # the dependency tag of each of the gene, disease, and the lowest common subsumer, and the
         # part of speech and text of the lowest common subsumer.
-        return np.array(labels, dtype='int32'), np.array(wordEmbedMatrix, dtype='int32'), \
+        return np.array(labels, dtype='int32'), np.array(wordEmbedMatrix), \
             np.array(geneDistanceMatrix, dtype='int32'), np.array(
-                diseaseDistanceMatrix, dtype='int32'), np.array(wordDistanceList), \
-            np.array(treeDistanceList), np.array(tagOneList), \
-            np.array(tagTwoList), np.array(tagLCSList), \
-            np.array(posLCSList), np.array(textLCSList),
+                diseaseDistanceMatrix, dtype='int32'), np.array(depFeaturesList)
 
     def createFeatures(self, labeled_list,  maxSentenceLen=100):
         # Lists for each feature
@@ -228,13 +250,9 @@ class Preprocessor:
         succeeded = 0
 
         # Lists for each feature from depParse (Dependency Tree)
-        wordDistanceList = []
-        treeDistanceList = []
-        tagOneList = []
-        tagTwoList = []
-        tagLCSList = []
-        posLCSList = []
-        textLCSList = []
+        depFeaturesList = []
+
+        nodepscount = 0
 
         print len(labeled_list), "entries"
         for i, entry in enumerate(labeled_list):
@@ -270,27 +288,49 @@ class Preprocessor:
                     # Depedency Parse Features
                     dp = depParse(" ".join(words), gene_ind,
                                   disease_ind, gene_name, disease_name)
-                    if dp == None:
-                        wordDistanceList.append(None)
-                        treeDistanceList.append(None)
-                        tagOneList.append(None)
-                        tagTwoList.append(None)
-                        tagLCSList.append(None)
-                        posLCSList.append(None)
-                        textLCSList.append(None)
-                    else:
-                        wordDistanceList.append(dp['distance'])
-                        treeDistanceList.append(dp['treeDistance'])
-                        tagOneList.append(dp['dependencyTagOne'])
-                        tagTwoList.append(dp['dependencyTagTwo'])
-                        tagLCSList.append(dp['dependencyTagLCS'])
-                        posLCSList.append(dp['posLCS'])
-                        textLCSList.append(dp['textLCS'])
+                if dp == None:
+                    # Error in dependency extraction
+                    # Couldn't find intelligent informationa about this
+                    depFeaturesList.append(None)
+                    nodepscount += 1
+                else:
+                    # Found the dependency features successfully
+                    depFeaturesList.append([dp['distance'], dp['treeDistance'], \
+                        int(dp['dependencyTagOne']), int(dp['dependencyTagTwo']), int(dp['dependencyTagLCS']), \
+                        dp['posLCS']])
 
-                    wordEmbeddingIDs = np.zeros(maxSentenceLen)
+                    # word embeddings for each word in the sentence
+                    wordEmbeddingIDs = np.zeros((maxSentenceLen, self.w2vlen))
+                    
+                    j = 0 # Index into wordEmbeddingsIDs
                     for i in range(0, min(maxSentenceLen, len(words))):
-                        # wordEmbeddingIDs[i] = self.word2vec_model.wv[words[i]]
-                        pass
+                        # Current word
+                        curr = words[i]
+
+                        if curr in self.word2vec_model.wv.vocab:
+                            # Known word
+                            j += 1
+                            try:
+                                wordEmbeddingIDs[j] = self.word2vec_model.wv[curr]
+                            except KeyError:
+                                # Unknown word
+                                if curr not in self.newFoundWords:
+                                    # Completely new word
+                                    # Parameters based on https://groups.google.com/forum/#!topic/word2vec-toolkit/J3Skqbe3VwQ
+                                    self.newFoundWords[curr] = np.random.uniform(-0.25,0.25,self.w2vlen).tolist()
+                                wordEmbeddingIDs[j] = self.newFoundWords[curr]
+                        elif all(char in set(string.punctuation) for char in curr) or len(curr) <= 1:
+                            # Is punctuation
+                            continue
+                        else:
+                            # Unknown word
+                            j += 1
+                            if curr not in self.newFoundWords:
+                                # Completely new word
+                                # Parameters based on https://groups.google.com/forum/#!topic/word2vec-toolkit/J3Skqbe3VwQ
+                                self.newFoundWords[curr] = np.random.uniform(-0.25,0.25,self.w2vlen).tolist()
+                            wordEmbeddingIDs[j] = self.newFoundWords[curr]
+
                     geneDistances, diseaseDistances = self.getDistances(
                         gene_ind, gene_length, disease_ind, disease_length,
                         maxSentenceLen, len(words))
@@ -301,6 +341,8 @@ class Preprocessor:
         # Print how many sentences we had to skip because feature extraction failed
         print "NUMBER OF SKIPPED"
         print skipped
+        print "NUMBER WITHOUT DEP"
+        print nodepscount
         print "NUMBER SUCCEEDED"
         print succeeded
 
@@ -310,10 +352,7 @@ class Preprocessor:
         # part of speech and text of the lowest common subsumer.
         return np.array(wordEmbedMatrix, dtype='int32'), \
             np.array(geneDistanceMatrix, dtype='int32'), np.array(
-                diseaseDistanceMatrix, dtype='int32'), np.array(wordDistanceList), \
-            np.array(treeDistanceList), np.array(tagOneList), \
-            np.array(tagTwoList), np.array(tagLCSList), \
-            np.array(posLCSList), np.array(textLCSList),
+                diseaseDistanceMatrix, dtype='int32'), np.array(depFeaturesList, dtype='int32')
 
 
 def main():
