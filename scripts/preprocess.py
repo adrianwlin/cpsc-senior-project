@@ -12,6 +12,7 @@ from gensim.models import Word2Vec
 from depParse import depParse
 import string
 
+
 class MySentences(object):
     def __init__(self, dirname):
         self.dirname = dirname
@@ -178,14 +179,15 @@ class Preprocessor:
                     nodepscount += 1
                 else:
                     # Found the dependency features successfully
-                    depFeaturesList.append([dp['distance'], dp['treeDistance'], \
-                        int(dp['dependencyTagOne']), int(dp['dependencyTagTwo']), int(dp['dependencyTagLCS']), \
-                        dp['posLCS']])
+                    depFeaturesList.append([dp['distance'], dp['treeDistance'],
+                                            int(dp['dependencyTagOne']), int(
+                                                dp['dependencyTagTwo']), int(dp['dependencyTagLCS']),
+                                            dp['posLCS']])
 
                 # word embeddings for each word in the sentence
                 wordEmbeddingIDs = np.zeros((maxSentenceLen, self.w2vlen))
 
-                j = 0 # Index into wordEmbeddingsIDs
+                j = 0  # Index into wordEmbeddingsIDs
                 for i in range(0, min(maxSentenceLen, len(words))):
                     # Current word
                     curr = words[i]
@@ -200,7 +202,8 @@ class Preprocessor:
                             if curr not in self.newFoundWords:
                                 # Completely new word
                                 # Parameters based on https://groups.google.com/forum/#!topic/word2vec-toolkit/J3Skqbe3VwQ
-                                self.newFoundWords[curr] = np.random.uniform(-0.25,0.25,self.w2vlen).tolist()
+                                self.newFoundWords[curr] = np.random.uniform(
+                                    -0.25, 0.25, self.w2vlen).tolist()
                             wordEmbeddingIDs[j] = self.newFoundWords[curr]
                     elif all(char in set(string.punctuation) for char in curr) or len(curr) <= 1:
                         # Is punctuation
@@ -211,7 +214,8 @@ class Preprocessor:
                         if curr not in self.newFoundWords:
                             # Completely new word
                             # Parameters based on https://groups.google.com/forum/#!topic/word2vec-toolkit/J3Skqbe3VwQ
-                            self.newFoundWords[curr] = np.random.uniform(-0.25,0.25,self.w2vlen).tolist()
+                            self.newFoundWords[curr] = np.random.uniform(
+                                -0.25, 0.25, self.w2vlen).tolist()
                         wordEmbeddingIDs[j] = self.newFoundWords[curr]
 
                 geneDistances, diseaseDistances = self.getDistances(
@@ -295,14 +299,15 @@ class Preprocessor:
                     nodepscount += 1
                 else:
                     # Found the dependency features successfully
-                    depFeaturesList.append([dp['distance'], dp['treeDistance'], \
-                        int(dp['dependencyTagOne']), int(dp['dependencyTagTwo']), int(dp['dependencyTagLCS']), \
-                        dp['posLCS']])
+                    depFeaturesList.append([dp['distance'], dp['treeDistance'],
+                                            int(dp['dependencyTagOne']), int(
+                                                dp['dependencyTagTwo']), int(dp['dependencyTagLCS']),
+                                            dp['posLCS']])
 
                     # word embeddings for each word in the sentence
                     wordEmbeddingIDs = np.zeros((maxSentenceLen, self.w2vlen))
-                    
-                    j = 0 # Index into wordEmbeddingsIDs
+
+                    j = 0  # Index into wordEmbeddingsIDs
                     for i in range(0, min(maxSentenceLen, len(words))):
                         # Current word
                         curr = words[i]
@@ -317,7 +322,8 @@ class Preprocessor:
                                 if curr not in self.newFoundWords:
                                     # Completely new word
                                     # Parameters based on https://groups.google.com/forum/#!topic/word2vec-toolkit/J3Skqbe3VwQ
-                                    self.newFoundWords[curr] = np.random.uniform(-0.25,0.25,self.w2vlen).tolist()
+                                    self.newFoundWords[curr] = np.random.uniform(
+                                        -0.25, 0.25, self.w2vlen).tolist()
                                 wordEmbeddingIDs[j] = self.newFoundWords[curr]
                         elif all(char in set(string.punctuation) for char in curr) or len(curr) <= 1:
                             # Is punctuation
@@ -328,7 +334,8 @@ class Preprocessor:
                             if curr not in self.newFoundWords:
                                 # Completely new word
                                 # Parameters based on https://groups.google.com/forum/#!topic/word2vec-toolkit/J3Skqbe3VwQ
-                                self.newFoundWords[curr] = np.random.uniform(-0.25,0.25,self.w2vlen).tolist()
+                                self.newFoundWords[curr] = np.random.uniform(
+                                    -0.25, 0.25, self.w2vlen).tolist()
                             wordEmbeddingIDs[j] = self.newFoundWords[curr]
 
                     geneDistances, diseaseDistances = self.getDistances(
@@ -350,9 +357,9 @@ class Preprocessor:
         # distance between gene and disease, dependency-tree-distance between gene and disease,
         # the dependency tag of each of the gene, disease, and the lowest common subsumer, and the
         # part of speech and text of the lowest common subsumer.
-        return np.array(wordEmbedMatrix, dtype='int32'), \
-            np.array(geneDistanceMatrix, dtype='int32'), np.array(
-                diseaseDistanceMatrix, dtype='int32'), np.array(depFeaturesList, dtype='int32')
+        return np.array(wordEmbedMatrix, dtype='float64'), \
+            np.array(geneDistanceMatrix, dtype='float64'), np.array(
+                diseaseDistanceMatrix, dtype='float64'), np.array(depFeaturesList, dtype='float64')
 
 
 def main():
@@ -377,7 +384,7 @@ def main():
     train_set = preprocessor.createTrainingFeatures(
         train_labeled, maxSentenceLen)
     test_set = preprocessor.createTrainingFeatures(test_labeled, maxSentenceLen)
-    with open(os.path.join(root_folder, "data/round2/preprocessed_test.p"), "wb") as f:
+    with open(os.path.join(root_folder, "data/round2/preprocessed_fixed.p"), "wb") as f:
         pickle.dump(train_set, f, -1)
         pickle.dump(test_set, f, -1)
 
