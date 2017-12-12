@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from scripts.becasgenesdiseases import becasNER, printCounts
 from scripts.preprocess import Preprocessor
 from StringIO import StringIO
-from keras import load_model
+from keras.models import load_model
 import sys
 
 app = Flask(__name__)
@@ -66,6 +66,9 @@ def upload_file():
         preprocessor = Preprocessor()
         wordEmbed, geneDist, diseaseDist, depFeatures, raw_text = preprocessor.createFeatures(
             entityList)
+        print "wordEmbed", wordEmbed.shape
+        print "geneDist", geneDist.shape
+        print "diseaseDist", diseaseDist.shape
         # raw_text is a list of (sentence, gene, disease) tuples
 
         dep_model = load_model("models/model_dep.h5")

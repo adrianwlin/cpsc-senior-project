@@ -25,7 +25,7 @@ class RelationCNN:
         self.batch_size = 64
         self.n_filters = 75
         self.filter_length = 3
-        self.nb_epoch = 25
+        self.nb_epoch = 1
         self.position_dims = 50
 
         self.yTrain, self.wordEmbedTrain, self.geneDistTrain, self.diseaseDistTrain, \
@@ -70,7 +70,7 @@ class RelationCNN:
                 self.diseaseDistTrain_dep.append(self.diseaseDistTrain[i])
                 self.depFeaturesTrain_dep.append(self.depFeaturesTrain[i])
         # convert to numpy arrays
-        self.yTrain_no_dep = np.array(self.yTrain_no_dep, dtype='float64')
+        self.yTrain_no_dep = np.array(self.yTrain_no_dep, dtype='int32')
         self.wordEmbedTrain_no_dep = np.array(
             self.wordEmbedTrain_no_dep, dtype='float64')
         self.geneDistTrain_no_dep = np.array(
@@ -105,7 +105,7 @@ class RelationCNN:
                 self.geneDistTest_dep.append(self.geneDistTest[i])
                 self.diseaseDistTest_dep.append(self.diseaseDistTest[i])
                 self.depFeaturesTest_dep.append(self.depFeaturesTest[i])
-        self.yTest_no_dep = np.array(self.yTest_no_dep, dtype='float64')
+        self.yTest_no_dep = np.array(self.yTest_no_dep, dtype='int32')
         self.wordEmbedTest_no_dep = np.array(
             self.wordEmbedTest_no_dep, dtype='float64')
         self.geneDistTest_no_dep = np.array(
@@ -246,7 +246,7 @@ class RelationCNN:
                 [self.geneDistTrain_dep, self.diseaseDistTrain_dep,
                     self.wordEmbedTrain_dep, self.depFeaturesTrain_dep],
                 self.train_y_cat_dep, batch_size=self.batch_size, verbose=False,
-                epochs=8, callbacks=[dep_csv_logger])
+                epochs=1, callbacks=[dep_csv_logger])
             probs = self.model_dep.predict(
                 [self.geneDistTest_dep, self.diseaseDistTest_dep,
                  self.wordEmbedTest_dep, self.depFeaturesTest_dep],
@@ -281,7 +281,7 @@ class RelationCNN:
                 [self.geneDistTrain_no_dep, self.diseaseDistTrain_no_dep,
                     self.wordEmbedTrain_no_dep],
                 self.train_y_cat_no_dep, batch_size=self.batch_size, verbose=False,
-                epochs=8, callbacks=[no_dep_csv_logger])
+                epochs=1, callbacks=[no_dep_csv_logger])
             probs = self.model_no_dep.predict(
                 [self.geneDistTest_no_dep, self.diseaseDistTest_no_dep,
                  self.wordEmbedTest_no_dep], verbose=False)
