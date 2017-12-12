@@ -8,6 +8,7 @@ from scripts.preprocess import Preprocessor
 from StringIO import StringIO
 from keras.models import load_model
 import sys
+import io
 
 app = Flask(__name__)
 
@@ -20,34 +21,41 @@ def index():
 @app.route('/uploader', methods=['GET', 'POST'])
 def upload_file():
     # Reroute stdout to a string to print to screen
-    old_stdout = sys.stdout
-    sys.stdout = mystdout = StringIO()
+    # old_stdout = sys.stdout
+    # sys.stdout = mystdout = StringIO()
 
     if request.method == 'POST':
-        f = request.files['file']
+        try:
+          f = request.files['file']
+        except:
+          f = None
 
         print 'Found entities:\n\n'
 
-        tempname = 'tempfile.txt'
+        tempname = 'temp/tempfile.txt'
 
         # Check if using url or file
         # If both, use file by default
         if f == None or not f:
             # Get file url and check it
             furl = request.form['file-url']
+            print furl
             if furl == '' or furl == None or not furl:
                 return 'No File Found!'
 
             # Load up the file url
             page = urllib2.urlopen(furl).read()
-            soup = BeautifulSoup(page)
+            soup = BeautifulSoup(page, "html5lib")
             soup.prettify()
 
             # Open a file and write all the paragraph elements to it
-            f2 = open(tempname, w)
-            for pars in soup.findAll('p'):
-                for par in pars:
-                    f2.write(par.get_text())
+            f2 = open(tempname, 'w')
+            print "NOW GETS HERE"
+            for pars in soup.find('p').getText():
+              print pars
+              for par in pars:
+                  f2.write(par.get_text())
+            print "THEN GETS HERE"
             f2.close()
         else:
             # Using a file not a file url
@@ -78,7 +86,7 @@ def upload_file():
         # probs is a numpy array of of shape (n, 2) where n is the length of raw_text
 
         # Put back stdout to be safe for next run
-        sys.stdout = old_stdout
+        # sys.stdout = old_stdout
 
         # Just the probability that the two are related
         probs = [i[1] for i in probsboth]
@@ -99,7 +107,7 @@ def upload_file():
           result.append(curr)
 
         # Check output
-        print mystdout.getvalue()
+        # print mystdout.getvalue()
 
         # return render_template("result.html", comm=mystdout.getvalue(), result=result)
         return render_template("result.html", result=result)
