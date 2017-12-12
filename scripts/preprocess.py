@@ -244,7 +244,7 @@ class Preprocessor:
             np.array(geneDistanceMatrix, dtype='int32'), np.array(
                 diseaseDistanceMatrix, dtype='int32'), np.array(depFeaturesList)
 
-    def createFeatures(self, labeled_list,  maxSentenceLen=100):
+    def createFeatures(self, labeled_list,  maxSentenceLen=333):
         '''
         Returns features and the sentences and genes that yielded the features
         '''
@@ -297,17 +297,17 @@ class Preprocessor:
                     # Depedency Parse Features
                     dp = depParse(" ".join(words), gene_ind,
                                   disease_ind, gene_name, disease_name)
-                if dp == None:
-                    # Error in dependency extraction
-                    # Couldn't find intelligent informationa about this
-                    depFeaturesList.append(None)
-                    nodepscount += 1
-                else:
-                    # Found the dependency features successfully
-                    depFeaturesList.append([dp['distance'], dp['treeDistance'],
-                                            int(dp['dependencyTagOne']), int(
-                                                dp['dependencyTagTwo']), int(dp['dependencyTagLCS']),
-                                            dp['posLCS']])
+                    if dp == None:
+                        # Error in dependency extraction
+                        # Couldn't find intelligent informationa about this
+                        depFeaturesList.append(None)
+                        nodepscount += 1
+                    else:
+                        # Found the dependency features successfully
+                        depFeaturesList.append([dp['distance'], dp['treeDistance'],
+                                                int(dp['dependencyTagOne']), int(
+                                                    dp['dependencyTagTwo']), int(dp['dependencyTagLCS']),
+                                                dp['posLCS']])
 
                     # word embeddings for each word in the sentence
                     wordEmbeddingIDs = np.zeros((maxSentenceLen, self.w2vlen))
