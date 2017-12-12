@@ -15,6 +15,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Embedding, Activation, Flatten, concatenate, Input
 from keras.layers import Conv1D, MaxPooling1D, GlobalMaxPooling1D
 from keras.models import Model
+from keras.callbacks import CSVLogger
 
 from keras.utils import np_utils
 
@@ -24,8 +25,7 @@ class RelationCNN:
         self.batch_size = 64
         self.n_filters = 75
         self.filter_length = 3
-        self.hidden_dims = 100
-        self.nb_epoch = 1
+        self.nb_epoch = 25
         self.position_dims = 50
 
         self.yTrain, self.wordEmbedTrain, self.geneDistTrain, self.diseaseDistTrain, \
@@ -35,7 +35,8 @@ class RelationCNN:
         self.max_position = None
         self.n_out = None
         self.train_y_cat = None
-        self.max_prec, self.max_rec, self.max_acc, self.max_f1 = 0, 0, 0, 0
+        self.max_prec_dep, self.max_rec_dep, self.max_acc_dep, self.max_f1_dep = 0, 0, 0, 0
+        self.max_prec_no_dep, self.max_rec_no_dep, self.max_acc_no_dep, self.max_f1_no_dep = 0, 0, 0, 0
         self.model_dep = None
         self.model_no_dep = None
 
@@ -207,78 +208,94 @@ class RelationCNN:
         model.summary()
         return model
 
-    # def getPrecision(self):
-    #     # Precision for non-vague
-    #     targetLabelCount = 0
-    #     correctTargetLabelCount = 0
-    #
-    #     for idx in xrange(len(pred_test)):
-    #         if pred_test[idx] == targetLabel:
-    #             targetLabelCount += 1
-    #
-    #             if pred_test[idx] == self.yTest[idx]:
-    #                 correctTargetLabelCount += 1
-    #
-    #     if correctTargetLabelCount == 0:
-    #         return 0
-    #
-    #     return float(correctTargetLabelCount) / targetLabelCount
+    def getPrecision(self, pred_test, yTest, targetLabel):
+        # Precision for non-vague
+        targetLabelCount = 0
+        correctTargetLabelCount = 0
+
+        for idx in xrange(len(pred_test)):
+            if pred_test[idx] == targetLabel:
+                targetLabelCount += 1
+
+                if pred_test[idx] == self.yTest[idx]:
+                    correctTargetLabelCount += 1
+
+        if correctTargetLabelCount == 0:
+            return 0
+
+        return float(correctTargetLabelCount) / targetLabelCount
 
     def trainModel(self):
         print "Start training: With dependency"
         for epoch in xrange(self.nb_epoch):
+            dep_csv_logger = CSVLogger('dep' + str(epoch) + '.log')
             self.model_dep.fit(
                 [self.geneDistTrain_dep, self.diseaseDistTrain_dep,
                     self.wordEmbedTrain_dep, self.depFeaturesTrain_dep],
-                self.train_y_cat_dep, batch_size=self.batch_size, verbose=True, epochs=1)
+                self.train_y_cat_dep, batch_size=self.batch_size, verbose=False,
+                epochs=8, callbacks=[dep_csv_logger])
             probs = self.model_dep.predict(
                 [self.geneDistTest_dep, self.diseaseDistTest_dep,
-                 self.wordEmbedTest_dep, self.depFeaturesTest_dep], verbose=True)
+                 self.wordEmbedTest_dep, self.depFeaturesTest_dep],
+                verbose=False)
             pred_test = np.argmax(probs, axis=1)
 
             dctLabels = np.sum(pred_test)
-            print dctLabels
             totalDCTLabels = np.sum(self.yTest_dep)
-            print totalDCTLabels
 
             acc = np.sum(pred_test == self.yTest_dep) / \
                 float(len(self.yTest_dep))
-            self.max_acc = max(self.max_acc, acc)
-            print "Accuracy: %.4f (max: %.4f)" % (acc, self.max_acc)
+            self.max_acc_dep = max(self.max_acc_dep, acc)
+            print "Accuracy: %.4f (max: %.4f)" % (acc, self.max_acc_dep)
+
+            f1Sum = 0
+            f1Count = 0
+            for targetLabel in [0, 1]:
+                prec = self.getPrecision(pred_test, self.yTest_dep, targetLabel)
+                rec = self.getPrecision(self.yTest_dep, pred_test, targetLabel)
+                f1 = 0 if (prec + rec) == 0 else 2 * prec * rec / (prec + rec)
+                f1Sum += f1
+                f1Count += 1
+
+            macroF1 = f1Sum / float(f1Count)
+            self.max_f1_dep = max(self.max_f1_dep, macroF1)
+            print "Non-other Macro-Averaged F1: %.4f (max: %.4f)\n" % (macroF1, self.max_f1_dep)
 
         print "Start training: Without dependency"
         for epoch in xrange(self.nb_epoch):
+            no_dep_csv_logger = CSVLogger('no_dep' + str(epoch) + '.log')
             self.model_no_dep.fit(
                 [self.geneDistTrain_no_dep, self.diseaseDistTrain_no_dep,
                     self.wordEmbedTrain_no_dep],
-                self.train_y_cat_no_dep, batch_size=self.batch_size, verbose=True, epochs=1)
+                self.train_y_cat_no_dep, batch_size=self.batch_size, verbose=False,
+                epochs=8, callbacks=[no_dep_csv_logger])
             probs = self.model_no_dep.predict(
                 [self.geneDistTest_no_dep, self.diseaseDistTest_no_dep,
-                 self.wordEmbedTest_no_dep], verbose=True)
+                 self.wordEmbedTest_no_dep], verbose=False)
             pred_test = np.argmax(probs, axis=1)
 
             dctLabels = np.sum(pred_test)
-            print dctLabels
             totalDCTLabels = np.sum(self.yTest_no_dep)
-            print totalDCTLabels
 
             acc = np.sum(pred_test == self.yTest_no_dep) / \
                 float(len(self.yTest_no_dep))
-            self.max_acc = max(self.max_acc, acc)
-            print "Accuracy: %.4f (max: %.4f)" % (acc, self.max_acc)
+            self.max_acc_no_dep = max(self.max_acc_no_dep, acc)
+            print "Accuracy: %.4f (max: %.4f)" % (acc, self.max_acc_no_dep)
 
-            # f1Sum = 0
-            # f1Count = 0
-            # for targetLabel in xrange(1, max(self.yTest)):
-            #     prec = getPrecision(pred_test, self.yTest, targetLabel)
-            #     rec = getPrecision(self.yTest, pred_test, targetLabel)
-            #     f1 = 0 if (prec + rec) == 0 else 2 * prec * rec / (prec + rec)
-            #     f1Sum += f1
-            #     f1Count += 1
+            f1Sum = 0
+            f1Count = 0
+            for targetLabel in [0, 1]:
+                prec = self.getPrecision(
+                    pred_test, self.yTest_no_dep, targetLabel)
+                rec = self.getPrecision(
+                    self.yTest_no_dep, pred_test, targetLabel)
+                f1 = 0 if (prec + rec) == 0 else 2 * prec * rec / (prec + rec)
+                f1Sum += f1
+                f1Count += 1
 
-            # macroF1 = f1Sum / float(f1Count)
-            # self.max_f1 = max(self.max_f1, macroF1)
-            # print "Non-other Macro-Averaged F1: %.4f (max: %.4f)\n" % (macroF1, self.max_f1)
+            macroF1 = f1Sum / float(f1Count)
+            self.max_f1_no_dep = max(self.max_f1_no_dep, macroF1)
+            print "Non-other Macro-Averaged F1: %.4f (max: %.4f)\n" % (macroF1, self.max_f1_no_dep)
 
 
 def main():
