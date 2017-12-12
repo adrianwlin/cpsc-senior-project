@@ -74,18 +74,35 @@ def upload_file():
         dep_model = load_model("models/model_dep.h5")
         no_dep_model = load_model("models/model_no_dep.h5")
 
-        probs = no_dep_model.predict([geneDist, diseaseDist, wordEmbed])
+        probsboth = no_dep_model.predict([geneDist, diseaseDist, wordEmbed]).tolist()
         # probs is a numpy array of of shape (n, 2) where n is the length of raw_text
-
-        print "NEXT REACHED THIS"
 
         # Put back stdout to be safe for next run
         sys.stdout = old_stdout
 
+        # Just the probability that the two are related
+        probs = [i[1] for i in probsboth]
+
+        # Reorder raw_text and probs by sort of probs
+        inds = sorted(range(len(probs)), key=lambda k: probs[k])[::-1]
+
+        raw_sorted = [raw_text[i] for i in inds]
+        probs_sorted = [probs[i] for i in inds]
+
+        result = []
+
+        # Build up the result using text and probabilities
+        for i in range(min(len(raw_sorted), len(probs_sorted))):
+          curr = {}
+          curr['data'] = raw_sorted[i]
+          curr['prob'] = probs_sorted[i]
+          result.append(curr)
+
         # Check output
         print mystdout.getvalue()
 
-        return render_template("result.html", comm=mystdout.getvalue())
+        # return render_template("result.html", comm=mystdout.getvalue(), result=result)
+        return render_template("result.html", result=result)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,19 @@
 {% block body %}
 <div class="result-text">
 	<p class="result-text-header">Here is all the output / commentary: </p>
-	<p>{{comm}}</p>
+	<ul>
+	{% for item in result %}
+        <li>
+        	Sentence: {{ item.data[0] }}
+        	<br>
+        	Gene: {{ item.data[1] }}
+        	<br>
+        	Disease: {{ item.data[2] }}
+        	<br>
+        	Probability: {{ item.prob }}
+        </li>
+    {% endfor %}
+    </ul>
+<!-- 	<p>{{comm}}</p> -->
 </div>
 {% endblock %}
