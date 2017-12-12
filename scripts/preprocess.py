@@ -245,10 +245,15 @@ class Preprocessor:
                 diseaseDistanceMatrix, dtype='int32'), np.array(depFeaturesList)
 
     def createFeatures(self, labeled_list,  maxSentenceLen=100):
+        '''
+        Returns features and the sentences and genes that yielded the features
+        '''
         # Lists for each feature
         geneDistanceMatrix = []
         diseaseDistanceMatrix = []
         wordEmbedMatrix = []
+        # (sentence, gene, disease) tuples
+        raw_text = []
         skipped = 0
         totalPairs = 0
         succeeded = 0
@@ -342,6 +347,8 @@ class Preprocessor:
                         gene_ind, gene_length, disease_ind, disease_length,
                         maxSentenceLen, len(words))
                     succeeded += 1
+                    raw_text.append(
+                        (entry["line"], gene_entry["name"], disease_entry["name"]))
                     wordEmbedMatrix.append(wordEmbeddingIDs)
                     geneDistanceMatrix.append(geneDistances)
                     diseaseDistanceMatrix.append(diseaseDistances)
@@ -358,8 +365,9 @@ class Preprocessor:
         # the dependency tag of each of the gene, disease, and the lowest common subsumer, and the
         # part of speech and text of the lowest common subsumer.
         return np.array(wordEmbedMatrix, dtype='float64'), \
-            np.array(geneDistanceMatrix, dtype='float64'), np.array(
-                diseaseDistanceMatrix, dtype='float64'), np.array(depFeaturesList, dtype='float64')
+            np.array(geneDistanceMatrix, dtype='float64'), \
+            np.array(diseaseDistanceMatrix, dtype='float64'), np.array(
+                depFeaturesList, dtype='float64'), raw_text
 
 
 def main():
