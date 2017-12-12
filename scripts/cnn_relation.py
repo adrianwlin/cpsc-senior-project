@@ -34,14 +34,18 @@ class RelationCNN:
             self.depFeaturesTest = None, None, None, None, None
         self.max_position = None
         self.n_out = None
-        self.train_y_cat = None
+        # max results for model with dependency features
         self.max_prec_dep, self.max_rec_dep, self.max_acc_dep, self.max_f1_dep = 0, 0, 0, 0
+        # max results for model without dependency features
         self.max_prec_no_dep, self.max_rec_no_dep, self.max_acc_no_dep, self.max_f1_no_dep = 0, 0, 0, 0
         self.model_dep = None
         self.model_no_dep = None
 
     # https://stackoverflow.com/questions/1735025/how-to-normalize-a-numpy-array-to-within-a-certain-range
     def normalize_columns(self, arr):
+        '''
+        normalize_columns for dependency features which maybe large integers
+        '''
         rows, cols = arr.shape
         for col in xrange(cols):
             arr[:, col] /= abs(arr[:, col]).max()
@@ -65,6 +69,7 @@ class RelationCNN:
                 self.geneDistTrain_dep.append(self.geneDistTrain[i])
                 self.diseaseDistTrain_dep.append(self.diseaseDistTrain[i])
                 self.depFeaturesTrain_dep.append(self.depFeaturesTrain[i])
+        # convert to numpy arrays
         self.yTrain_no_dep = np.array(self.yTrain_no_dep, dtype='float64')
         self.wordEmbedTrain_no_dep = np.array(
             self.wordEmbedTrain_no_dep, dtype='float64')
@@ -132,7 +137,9 @@ class RelationCNN:
                                 np.max(self.diseaseDistTrain)) + 1
         self.splitDataDep()
 
+        # number of possible output labels (2)
         self.n_out = max(self.yTrain) + 1
+        # convert to categorical
         self.train_y_cat_dep = np_utils.to_categorical(
             self.yTrain_dep, self.n_out)
         self.train_y_cat_no_dep = np_utils.to_categorical(
@@ -153,7 +160,9 @@ class RelationCNN:
         print "With deps: {}, Without deps: {}".format(self.yTest_dep.shape[0], self.yTest_no_dep.shape[0])
 
     def createModel(self, useDep=False):
-        # Distance embeddings
+        '''Creates the CNN with dependency features if useDep = True'''
+        # Distance embeddings with convolution
+        # The gene and disease embeddings are concatenated
         geneInput = Input(shape=(self.geneDistTrain.shape[1],))
         geneDistEmbed = Embedding(input_dim=self.max_position, output_dim=self.position_dims,
                                   input_length=self.geneDistTrain.shape[1])(geneInput)
@@ -165,13 +174,12 @@ class RelationCNN:
                                  kernel_size=self.filter_length,
                                  padding='same',
                                  activation='tanh')(mergedDistEmbed)
-        # we use standard max over time pooling
+        # standard max over time pooling
         max_pool_dist = GlobalMaxPooling1D()(distConvolution)
+        # droupout layer
         dropout_dist = Dropout(0.25)(max_pool_dist)
 
-        depEmbed = None
-
-        # Word Embeddings
+        # Word Embeddings with convolution
         wordEmbedInput = Input(
             shape=(self.wordEmbedTrain.shape[1], self.wordEmbedTrain.shape[2]))
         wordEmbedConvolution = Conv1D(filters=self.n_filters,
@@ -190,7 +198,7 @@ class RelationCNN:
         else:
             merged = concatenate(
                 [dropout_dist, dropout_wordEmbed])
-
+        # Final layer to with softmax activation which produces probabilites.
         dense_out = Dense(self.n_out, activation='softmax')(merged)
 
         if useDep:
@@ -209,7 +217,10 @@ class RelationCNN:
         return model
 
     def getPrecision(self, pred_test, yTest, targetLabel):
-        # Precision for non-vague
+        '''
+        Gets the precision for the targetLabel of pred_test
+        ie the proportion of targetLabel's in pred_test that match those in yTest.
+        '''
         targetLabelCount = 0
         correctTargetLabelCount = 0
 
@@ -227,7 +238,9 @@ class RelationCNN:
 
     def trainModel(self):
         print "Start training: With dependency"
+        # Run the training self.nb_epoch times and take the max accuracy
         for epoch in xrange(self.nb_epoch):
+            # Write the output of each epoch to a csv log file
             dep_csv_logger = CSVLogger('dep' + str(epoch) + '.log')
             self.model_dep.fit(
                 [self.geneDistTrain_dep, self.diseaseDistTrain_dep,
@@ -240,14 +253,13 @@ class RelationCNN:
                 verbose=False)
             pred_test = np.argmax(probs, axis=1)
 
-            dctLabels = np.sum(pred_test)
-            totalDCTLabels = np.sum(self.yTest_dep)
-
+            # Calculate accuracy
             acc = np.sum(pred_test == self.yTest_dep) / \
                 float(len(self.yTest_dep))
             self.max_acc_dep = max(self.max_acc_dep, acc)
             print "Accuracy: %.4f (max: %.4f)" % (acc, self.max_acc_dep)
 
+            # Calculate F1 score
             f1Sum = 0
             f1Count = 0
             for targetLabel in [0, 1]:
@@ -262,6 +274,7 @@ class RelationCNN:
             print "Non-other Macro-Averaged F1: %.4f (max: %.4f)\n" % (macroF1, self.max_f1_dep)
 
         print "Start training: Without dependency"
+        # Do the same with the model without dependency
         for epoch in xrange(self.nb_epoch):
             no_dep_csv_logger = CSVLogger('no_dep' + str(epoch) + '.log')
             self.model_no_dep.fit(
@@ -273,9 +286,6 @@ class RelationCNN:
                 [self.geneDistTest_no_dep, self.diseaseDistTest_no_dep,
                  self.wordEmbedTest_no_dep], verbose=False)
             pred_test = np.argmax(probs, axis=1)
-
-            dctLabels = np.sum(pred_test)
-            totalDCTLabels = np.sum(self.yTest_no_dep)
 
             acc = np.sum(pred_test == self.yTest_no_dep) / \
                 float(len(self.yTest_no_dep))
@@ -302,9 +312,11 @@ def main():
     # Shows how this code is run
     rcnn = RelationCNN()
     rcnn.loadDataset()
+    # Create 2 models
     rcnn.model_dep = rcnn.createModel(useDep=True)
     rcnn.model_no_dep = rcnn.createModel(useDep=False)
     rcnn.trainModel()
+    # Save the models
     root_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     rcnn.model_dep.save(os.path.join(root_folder, "models/model_dep.h5"))
     rcnn.model_no_dep.save(os.path.join(root_folder, "models/model_no_dep.h5"))
