@@ -25,7 +25,7 @@ class RelationCNN:
         self.batch_size = 64
         self.n_filters = 75
         self.filter_length = 3
-        self.nb_epoch = 1
+        self.nb_epoch = 25
         self.position_dims = 50
 
         self.yTrain, self.wordEmbedTrain, self.geneDistTrain, self.diseaseDistTrain, \
@@ -246,7 +246,7 @@ class RelationCNN:
                 [self.geneDistTrain_dep, self.diseaseDistTrain_dep,
                     self.wordEmbedTrain_dep, self.depFeaturesTrain_dep],
                 self.train_y_cat_dep, batch_size=self.batch_size, verbose=False,
-                epochs=1, callbacks=[dep_csv_logger])
+                epochs=8, callbacks=[dep_csv_logger])
             probs = self.model_dep.predict(
                 [self.geneDistTest_dep, self.diseaseDistTest_dep,
                  self.wordEmbedTest_dep, self.depFeaturesTest_dep],
@@ -281,7 +281,7 @@ class RelationCNN:
                 [self.geneDistTrain_no_dep, self.diseaseDistTrain_no_dep,
                     self.wordEmbedTrain_no_dep],
                 self.train_y_cat_no_dep, batch_size=self.batch_size, verbose=False,
-                epochs=1, callbacks=[no_dep_csv_logger])
+                epochs=8, callbacks=[no_dep_csv_logger])
             probs = self.model_no_dep.predict(
                 [self.geneDistTest_no_dep, self.diseaseDistTest_no_dep,
                  self.wordEmbedTest_no_dep], verbose=False)
