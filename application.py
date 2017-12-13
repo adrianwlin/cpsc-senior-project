@@ -26,9 +26,9 @@ def upload_file():
 
     if request.method == 'POST':
         try:
-          f = request.files['file']
+            f = request.files['file']
         except:
-          f = None
+            f = None
 
         print 'Found entities:\n\n'
 
@@ -51,10 +51,8 @@ def upload_file():
             # Open a file and write all the paragraph elements to it
             f2 = open(tempname, 'w')
             print "NOW GETS HERE"
-            for pars in soup.find('p').getText():
-              print pars
-              for par in pars:
-                  f2.write(par.get_text())
+            for par in soup.find_all('p'):
+                f2.write(par.get_text())
             print "THEN GETS HERE"
             f2.close()
         else:
@@ -77,40 +75,45 @@ def upload_file():
         print "wordEmbed", wordEmbed.shape
         print "geneDist", geneDist.shape
         print "diseaseDist", diseaseDist.shape
-        # raw_text is a list of (sentence, gene, disease) tuples
 
-        dep_model = load_model("models/model_dep.h5")
-        no_dep_model = load_model("models/model_no_dep.h5")
+        if wordEmbed.shape[0]:
+            # raw_text is a list of (sentence, gene, disease) tuples
 
-        probsboth = no_dep_model.predict([geneDist, diseaseDist, wordEmbed]).tolist()
-        # probs is a numpy array of of shape (n, 2) where n is the length of raw_text
+            dep_model = load_model("models/model_dep.h5")
+            no_dep_model = load_model("models/model_no_dep.h5")
 
-        # Put back stdout to be safe for next run
-        # sys.stdout = old_stdout
+            probsboth = no_dep_model.predict(
+                [geneDist, diseaseDist, wordEmbed]).tolist()
+            # probs is a numpy array of of shape (n, 2) where n is the length of raw_text
 
-        # Just the probability that the two are related
-        probs = [i[1] for i in probsboth]
+            # Put back stdout to be safe for next run
+            # sys.stdout = old_stdout
 
-        # Reorder raw_text and probs by sort of probs
-        inds = sorted(range(len(probs)), key=lambda k: probs[k])[::-1]
+            # Just the probability that the two are related
+            probs = [i[1] for i in probsboth]
 
-        raw_sorted = [raw_text[i] for i in inds]
-        probs_sorted = [probs[i] for i in inds]
+            # Reorder raw_text and probs by sort of probs
+            inds = sorted(range(len(probs)), key=lambda k: probs[k])[::-1]
 
-        result = []
+            raw_sorted = [raw_text[i] for i in inds]
+            probs_sorted = [probs[i] for i in inds]
 
-        # Build up the result using text and probabilities
-        for i in range(min(len(raw_sorted), len(probs_sorted))):
-          curr = {}
-          curr['data'] = raw_sorted[i]
-          curr['prob'] = probs_sorted[i]
-          result.append(curr)
+            result = []
 
-        # Check output
-        # print mystdout.getvalue()
+            # Build up the result using text and probabilities
+            for i in range(min(len(raw_sorted), len(probs_sorted))):
+                curr = {}
+                curr['data'] = raw_sorted[i]
+                curr['prob'] = probs_sorted[i]
+                result.append(curr)
 
-        # return render_template("result.html", comm=mystdout.getvalue(), result=result)
-        return render_template("result.html", result=result)
+            # Check output
+            # print mystdout.getvalue()
+
+            # return render_template("result.html", comm=mystdout.getvalue(), result=result)
+            return render_template("result.html", result=result)
+        print "No pairs found"
+        return ('', 204)
 
 
 if __name__ == "__main__":
